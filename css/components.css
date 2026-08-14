@@ -278,6 +278,12 @@
   letter-spacing: -.025em;
   line-height: 1.4;
   word-break: keep-all;
+  /* 제목이 1줄이어도 2줄 높이를 확보해 카드 간 요약 시작선(그리드)을 맞춘다 */
+  min-height: 2.8em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .card-title a { color: inherit; }
 .card-title a:hover { color: var(--violet-600); }
@@ -358,6 +364,7 @@
 
   .card-body { padding: 14px 16px; }
   .card-meta { margin-bottom: 6px; }
+  .card-title { min-height: 0; }                 /* 모바일 단일 열: 2줄 높이 확보 불필요 */
   .badge { display: none; }                      /* 유형 배지 숨김 */
   .card-summary { display: none; }               /* 요약 숨김 */
   .tags { display: none; }                       /* 태그 숨김 */

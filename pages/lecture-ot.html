@@ -237,17 +237,23 @@
         <div class="lc-callout-body">
           <p><strong>[참고] 교안 안내</strong></p>
           <ul class="lc-list">
-            <li>본 강의교안의 초안은 생성형 AI(ChatGPT, Claude)를 통해 20% 제작, 교재 40%, 이후 교수자가 맥락, 용어, 규칙, 패턴, 내용 검수 후 100% 완결함</li>
+            <li>본 강의교안의 초안은 생성형 AI(ChatGPT, Claude)를 통해 20% 제작, 교재 40%, 이후 교수자가 맥락, 용어, 규칙, 패턴, 내용 검수 후 추가 제작하여 100% 완결함</li>
             <li>본 강의교안에 사용된 이미지는 미드저니를 통해 별도 제작하여 삽입함</li>
             <li>웹뷰로 제작된 강의교안은 ChatGPT, Claude로 초안 제작하여 교수자가 소스 일부 수정하면서 깃허브에 업로드 한 것임</li>
           </ul>
         </div>
       </div>
 
-      <!-- prev / next (미오픈 강의는 준비중 안내) -->
+      <!-- prev / next (주차 표기 · 미오픈 강의는 준비중 안내) -->
       <nav class="lecture-nav" aria-label="강의 이동">
-        <button type="button" class="lecture-nav-btn" data-href="">← 이전 강의</button>
-        <button type="button" class="lecture-nav-btn" data-href="">다음 강의 →</button>
+        <span class="lecture-nav-item is-disabled">
+          <span class="nav-dir">← 이전 강의</span>
+          <span class="nav-name">첫 강의입니다</span>
+        </span>
+        <button type="button" class="lecture-nav-item lecture-nav-item--next lecture-nav-btn" data-href="">
+          <span class="nav-dir">다음 강의 →</span>
+          <span class="nav-name">WEEK 01 · 오리엔테이션 및 생성형 AI 개요</span>
+        </button>
       </nav>
 
     </article>

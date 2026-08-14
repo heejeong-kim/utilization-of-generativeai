@@ -218,18 +218,21 @@
   padding-top: 24px;
   border-top: 1px solid var(--line);
 }
-.lecture-nav a { font-size: var(--fs-base); font-weight: 600; color: var(--violet-600); }
-.lecture-nav a:hover { color: var(--violet-500); }
-.lecture-nav .is-disabled { font-size: var(--fs-base); font-weight: 600; color: var(--ink-300); }
-.lecture-nav-btn {
+.lecture-nav-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   padding: 0;
   border: 0;
   background: none;
-  font-size: var(--fs-base);
-  font-weight: 600;
-  color: var(--violet-600);
+  text-align: left;
 }
-.lecture-nav-btn:hover { color: var(--violet-500); }
+.lecture-nav-item--next { text-align: right; align-items: flex-end; }
+.lecture-nav-item .nav-dir { font-size: var(--fs-xs); font-weight: 600; color: var(--ink-500); }
+.lecture-nav-item .nav-name { font-size: var(--fs-base); font-weight: 600; color: var(--violet-600); }
+button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
+.lecture-nav-item.is-disabled .nav-dir,
+.lecture-nav-item.is-disabled .nav-name { color: var(--ink-300); }
 
 /* 미오픈 강의 안내 토스트 */
 .lecture-toast {
