@@ -13,7 +13,7 @@
    ========================================================================== */
 
 const CONFIG = {
-  SHEET_API_URL: '',   // 예: 'https://script.google.com/macros/s/AKfy.../exec'
+  SHEET_API_URL: 'https://script.google.com/macros/s/AKfycbx3FOrdEDqyme8QB_omc1tiy0BJaUJkWrY7uBmnvx0xt1nFhfacf6yTVU0a8Cn2az5o/exec',
   TOTAL_WEEKS: 15,
   CLASSES: ['A', 'B', 'C']
 };
