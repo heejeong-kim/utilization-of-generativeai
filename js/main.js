@@ -50,25 +50,35 @@
       return '<li class="tag">' + esc(t) + '</li>';
     }).join('');
 
+    const link = item.link ? esc(item.link) : '';
+
     // 링크가 비어 있으면 준비 중 상태로 표기한다
     const cta = item.link
-      ? '<a class="card-cta" href="' + esc(item.link) + '">강의교안 열기 ' +
+      ? '<a class="card-cta" href="' + link + '">강의교안 보기 ' +
         '<span class="btn-arrow" aria-hidden="true">→</span></a>'
       : '<span class="card-cta card-cta--soon">준비 중</span>';
 
+    // 썸네일: 링크가 있으면 상세로 이동
+    const img = '<img src="assets/img/' + esc(item.thumb) + '" alt="" loading="lazy" ' +
+                'onerror="this.style.display=\'none\'">';
+    const thumb = item.link
+      ? '<a class="card-thumb" href="' + link + '" aria-label="' + esc(item.title) + ' 강의교안 보기">' + img + '</a>'
+      : '<div class="card-thumb">' + img + '</div>';
+
+    // 제목: 링크가 있으면 상세로 이동
+    const title = item.link
+      ? '<h3 class="card-title"><a href="' + link + '">' + esc(item.title) + '</a></h3>'
+      : '<h3 class="card-title">' + esc(item.title) + '</h3>';
+
     return '' +
       '<article class="card' + typeClass + '" data-type="' + esc(item.type) + '">' +
-        '<div class="card-thumb">' +
-          '<span class="thumb-fallback" aria-hidden="true">' + esc(item.week) + '</span>' +
-          '<img src="assets/img/' + esc(item.thumb) + '" alt="" loading="lazy" ' +
-               'onerror="this.style.display=\'none\'">' +
-        '</div>' +
+        thumb +
         '<div class="card-body">' +
           '<div class="card-meta">' +
             '<p class="card-week">' + esc(item.week) + '</p>' +
             '<span class="badge' + badgeClass + '">' + esc(item.badge) + '</span>' +
           '</div>' +
-          '<h3 class="card-title">' + esc(item.title) + '</h3>' +
+          title +
           '<ul class="card-summary">' + summary + '</ul>' +
           '<ul class="tags">' + tags + '</ul>' +
           cta +

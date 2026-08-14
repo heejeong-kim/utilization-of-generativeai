@@ -104,9 +104,6 @@
       <p class="lc-p">생성형 인공지능(Generative AI)의 개념과 활용 방법을 이해하고, 이를 기반으로 실제 문제 해결을 위한 프로젝트를 설계하고 프로토타입을 구현하는 실습 중심의 수업</p>
       <p class="lc-p">학생들은 ChatGPT 및 다양한 거대 언어 모델(LLM) 플랫폼을 활용하여 아이디어를 구체화하고, 데이터 기반의 문제 해결 도구 또는 콘텐츠를 제작하는 과정을 경험</p>
       <p class="lc-p">특히 ‘ChatGPT 프로젝트’ 기능을 중심으로 기획·개발·피드백의 전 과정을 수행하면서, 생성형 AI를 도구로 활용하는 창의적 문제 해결 능력과 디지털 리터러시 역량을 함양</p>
-      <figure class="lc-figure">
-        <img src="../assets/img/ot.png" alt="생성형 AI 활용 오리엔테이션 대표 이미지">
-      </figure>
 
       <!-- 주교재 -->
       <h2 class="lc-h2" id="textbook">📚 주교재</h2>
@@ -247,10 +244,10 @@
         </div>
       </div>
 
-      <!-- prev / next -->
+      <!-- prev / next (미오픈 강의는 준비중 안내) -->
       <nav class="lecture-nav" aria-label="강의 이동">
-        <span class="is-disabled">← 이전 강의</span>
-        <a href="../index.html#weekly">다음 · 주차별 강의교안 →</a>
+        <button type="button" class="lecture-nav-btn" data-href="">← 이전 강의</button>
+        <button type="button" class="lecture-nav-btn" data-href="">다음 강의 →</button>
       </nav>
 
     </article>
@@ -272,12 +269,32 @@
   <span class="back-top-arrow" aria-hidden="true">↑</span>
 </button>
 
+<!-- 미오픈 강의 안내 토스트 -->
+<div class="lecture-toast" id="lectureToast" role="status" aria-live="polite">강의교안 준비중입니다.</div>
+
 <script>
-  /* 주차 선택 이동 */
   (function () {
+    /* 주차 선택 이동 */
     var sel = document.getElementById('weekSelect');
     if (sel) sel.addEventListener('change', function () {
       if (this.value) window.location.href = this.value;
+    });
+
+    /* 이전·다음 강의: 링크가 있으면 이동, 없으면(미오픈) 준비중 안내 */
+    var toast = document.getElementById('lectureToast');
+    var toastTimer;
+    function showToast() {
+      if (!toast) return;
+      toast.classList.add('is-show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toast.classList.remove('is-show'); }, 1800);
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('.lecture-nav-btn'), function (btn) {
+      btn.addEventListener('click', function () {
+        var href = btn.getAttribute('data-href');
+        if (href) window.location.href = href;
+        else showToast();
+      });
     });
 
     /* 상단 스크롤 진행 표시줄 */
