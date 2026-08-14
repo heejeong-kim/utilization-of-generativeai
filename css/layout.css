@@ -177,6 +177,18 @@
 }
 .section-title--light { color: #fff; }
 
+/* 제목 자체를 링크로 쓸 때 — 색상은 제목을 그대로 따르고, 호버 시에만 밑줄 */
+.section-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+.section-title-link:hover,
+.section-title-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  text-decoration-thickness: 2px;
+}
+
 .section-desc {
   margin-top: 12px;
   color: var(--ink-500);
