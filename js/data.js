@@ -33,7 +33,7 @@ const WEEKS = [
       '프롬프트·모델·응답 등 기본 용어를 정리하고 교육과 산업의 활용 사례를 탐색한다'
     ],
     tags: ['생성형 AI 개요', 'LLM', '수업 운영'],
-    thumb: '1.png', link: ''
+    thumb: '1.png', link: 'pages/lecture-week01.html'
   },
   {
     no: 2, week: 'WEEK 02', type: 'class', badge: '수업',
