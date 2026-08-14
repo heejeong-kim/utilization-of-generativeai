@@ -444,3 +444,33 @@
   color: var(--ink-300);
   font-size: var(--fs-xs);
 }
+
+/* ---------- 플로팅 '맨 위로' 버튼 (스크롤 추종, 전 페이지 공통) ---------- */
+.back-top {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 999px;
+  border: 1px solid var(--line-dark);
+  background: var(--violet-900);
+  color: #fff;
+  box-shadow: var(--shadow-card-hover);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px);
+  transition: opacity .25s ease, transform .25s ease, visibility .25s ease, background .2s ease;
+}
+.back-top.is-visible { opacity: 1; visibility: visible; transform: translateY(0); }
+.back-top:hover { background: var(--violet-600); }
+.back-top:focus-visible { outline: 2px solid var(--mint-500); outline-offset: 3px; }
+.back-top-arrow { font-size: 21px; line-height: 1; }
+
+@media (max-width: 560px) {
+  .back-top { right: 16px; bottom: 16px; width: 46px; height: 46px; }
+}
