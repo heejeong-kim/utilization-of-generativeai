@@ -22,6 +22,13 @@
   let currentClass   = 'all';
   let currentKeyword = '';
 
+  // 공용 설정 (config.js) — 팀 현황을 구글 시트에서 불러올 때 사용
+  const APP_CONFIG    = window.APP_CONFIG || {};
+  const SHEET_API_URL = APP_CONFIG.SHEET_API_URL || '';
+  const TOTAL_WEEKS   = APP_CONFIG.TOTAL_WEEKS || 15;
+
+  let teams = [];   // 구글 시트에서 불러온 실제 등록 팀 목록
+
   /* ---------- HTML 이스케이프 ---------- */
   function esc(str) {
     return String(str).replace(/[&<>"']/g, function (ch) {
@@ -132,9 +139,52 @@
     });
   }
 
+  /* ---------- 시트 레코드 → 카드용 팀 객체 변환 ---------- */
+  function mapSheetTeam(t) {
+    // 이름이 채워진 팀원 수 (팀원 1·2 필수, 3 선택)
+    const memberCount = [t.m1name, t.m2name, t.m3name].filter(function (n) {
+      return n && String(n).trim() !== '';
+    }).length;
+
+    // 노션 URL이 입력된 주차 수 = 제출 산출물 수
+    let done = 0;
+    for (let w = 1; w <= TOTAL_WEEKS; w++) {
+      if (t['w' + w] && String(t['w' + w]).trim() !== '') done++;
+    }
+
+    return {
+      cls:     t.cls,
+      name:    t.teamName,
+      topic:   t.idea,
+      members: memberCount,
+      done:    done,
+      total:   TOTAL_WEEKS,
+      url:     t.projectUrl || ''
+    };
+  }
+
+  /* ---------- 구글 시트에서 실제 등록 팀 불러오기 ---------- */
+  function loadTeamsFromSheet() {
+    if (!SHEET_API_URL) { renderTeams(); return; }
+
+    fetch(SHEET_API_URL + '?action=list', { method: 'GET' })
+      .then(function (res) { return res.json(); })
+      .then(function (json) {
+        const rows = (json && Array.isArray(json.teams)) ? json.teams : [];
+        teams = rows
+          .filter(function (t) { return t && t.teamName; })
+          .map(mapSheetTeam);
+        renderTeams();
+      })
+      .catch(function () {
+        teams = [];
+        renderTeams();
+      });
+  }
+
   /* ---------- 팀 목록 렌더링 ---------- */
   function renderTeams() {
-    const list = TEAMS.filter(function (t) {
+    const list = teams.filter(function (t) {
       return currentClass === 'all' || t.cls === currentClass;
     });
 
@@ -235,7 +285,7 @@
 
   /* ---------- 초기 실행 ---------- */
   renderWeeks();
-  renderTeams();
+  loadTeamsFromSheet();
   bindParallax();
   cycleFlow();
 

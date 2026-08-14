@@ -12,8 +12,9 @@
    4. URL이 비어 있으면 화면 확인용 미연동 모드로 동작하며 새로고침 시 입력이 사라진다
    ========================================================================== */
 
-const CONFIG = {
-  SHEET_API_URL: 'https://script.google.com/macros/s/AKfycbx3FOrdEDqyme8QB_omc1tiy0BJaUJkWrY7uBmnvx0xt1nFhfacf6yTVU0a8Cn2az5o/exec',
+// 설정은 config.js(window.APP_CONFIG)에서 가져온다. 미로드 시 안전 기본값 사용.
+const CONFIG = window.APP_CONFIG || {
+  SHEET_API_URL: '',
   TOTAL_WEEKS: 15,
   CLASSES: ['A', 'B', 'C']
 };

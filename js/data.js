@@ -169,21 +169,9 @@ const WEEKS = [
 
 /* --------------------------------------------------------------------------
    팀 현황 데이터
-   cls   : 'A' | 'B' | 'C' — 분반 필터에 사용됨
-   done  : 제출 완료 산출물 수 / total : 전체 산출물 단계 수
-   url   : 팀 결과물 URL. 빈 문자열이면 '배포 전'으로 표시됨
-   팀 수는 제한이 없으며 행을 추가하면 그리드에 그대로 이어짐
+   index.html 하단 '팀 현황'은 더미 배열이 아니라 구글 시트에 실제 등록된 팀을
+   불러와 표시한다. (main.js 가 config.js 의 SHEET_API_URL 로 조회함)
    -------------------------------------------------------------------------- */
 
-const TEAMS = [
-  { cls: 'A', name: 'A-1팀', topic: '학과 공지 요약 비서', members: 5, done: 4, total: 12, url: '' },
-  { cls: 'A', name: 'A-2팀', topic: '자기소개서 첨삭 비서', members: 5, done: 3, total: 12, url: '' },
-  { cls: 'A', name: 'A-3팀', topic: '스터디 일정 조율 비서', members: 4, done: 5, total: 12, url: '' },
-  { cls: 'B', name: 'B-1팀', topic: '강의 노트 정리 도우미', members: 5, done: 2, total: 12, url: '' },
-  { cls: 'B', name: 'B-2팀', topic: '동아리 홍보 콘텐츠 생성기', members: 4, done: 6, total: 12, url: '' },
-  { cls: 'C', name: 'C-1팀', topic: '캠퍼스 맛집 추천 챗봇', members: 5, done: 3, total: 12, url: '' },
-  { cls: 'C', name: 'C-2팀', topic: '전공 용어 학습 비서', members: 4, done: 4, total: 12, url: '' }
-];
-
-/* 팀 현황 전체 보기 CTA가 연결될 주소 (Notion 팀 현황 보드 등) */
-const TEAM_STATUS_URL = 'https://www.notion.so/';
+/* 팀 현황 전체 보기 CTA가 연결될 주소 (팀 현황 페이지) */
+const TEAM_STATUS_URL = 'https://heejeong-kim.github.io/utilization-of-generativeai/pages/team-project.html';
