@@ -38,11 +38,11 @@
   --fs-lg: 24px;
   --fs-xl: 30px;
   --fs-2xl: 42px;
-  --fs-3xl: 68px;
+  --fs-3xl: 54px;
 
   /* ---- 레이아웃 ---- */
   --shell-max: 1520px;
-  --shell-pad: 60px;
+  --shell-pad: 32px;
   --grid-gap: 28px;
   --radius-sm: 8px;
   --radius-md: 14px;
@@ -100,7 +100,7 @@ button { cursor: pointer; border: 0; background: none; }
   letter-spacing: .22em;
   text-transform: uppercase;
   color: var(--mint-300);
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .eyebrow--dark { color: var(--violet-600); }

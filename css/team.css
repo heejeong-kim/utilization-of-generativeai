@@ -11,11 +11,11 @@
 
 /* ---------- 히어로 변형 ---------- */
 .hero--team .hero-inner {
-  grid-template-columns: minmax(0, 1fr) 420px;
-  padding-block: 84px 92px;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  padding-block: 46px 52px;
 }
 
-.hero-title--sm { font-size: clamp(44px, 5vw, 72px); }
+.hero-title--sm { font-size: clamp(40px, 4.2vw, 60px); }
 
 .hero-visual {
   position: relative;
@@ -40,7 +40,7 @@
 /* ---------- 등록 섹션 ---------- */
 .register {
   background: var(--paper-tint);
-  padding-block: 80px 88px;
+  padding-block: 52px 84px;
 }
 
 .form-card {
@@ -280,7 +280,7 @@
   background:
     radial-gradient(110% 120% at 10% 0%, #2E2168 0%, transparent 60%),
     var(--violet-950);
-  padding-block: 82px 92px;
+  padding-block: 72px 88px;
 }
 .board .shell { position: relative; z-index: 1; }
 

@@ -41,7 +41,7 @@
 /* ---------- 시그니처: 학기 흐름 패널 ---------- */
 .flow-panel {
   position: relative;
-  padding: 34px 32px;
+  padding: 26px 28px;
   border: 1px solid var(--line-dark);
   border-radius: var(--radius-lg);
   background: linear-gradient(170deg, rgba(42, 31, 94, .82), rgba(20, 16, 42, .74));
@@ -50,7 +50,7 @@
 }
 
 .panel-label {
-  margin-bottom: 24px;
+  margin-bottom: 18px;
   color: var(--ink-300);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
@@ -76,7 +76,7 @@
   align-items: start;
   gap: 8px;
 }
-.flow-item + .flow-item { margin-top: 24px; }
+.flow-item + .flow-item { margin-top: 17px; }
 
 .flow-num {
   position: relative;
@@ -129,7 +129,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 30px;
+  margin-bottom: 22px;
 }
 
 .search { position: relative; width: 340px; }
