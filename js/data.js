@@ -1,164 +1,189 @@
 /* ==========================================================================
    data.js — 주차별 강의교안 데이터 / 팀 현황 데이터
-   이 파일만 수정하면 index.html 의 카드 목록이 자동으로 갱신된다.
+   커리큘럼명과 요약은 Notion '주차별 커리큘럼' DB의 커리큘럼 · 목표 및 내용 기준임
 
    [주차 카드 속성]
-   id     : 정렬 및 식별용 문자열
-   week   : 카드 상단에 표기되는 라벨 (예: 'WEEK 01')
-   type   : 'class' (수업) | 'eval' (평가) — 필터와 색상 인디케이터에 사용
-   badge  : 우측 상단 배지 문구
-   title  : 카드 제목
-   desc   : 한 줄 설명 (~한다 체로 통일)
-   tags   : 키워드 배열 (검색 대상에 포함됨)
-   thumb  : assets/img 안의 파일명
-   link   : 강의교안 페이지 경로. 빈 문자열이면 '준비 중' 상태로 표시된다.
+   no      : 주차 번호 (썸네일 파일명과 동일하게 사용됨)
+   week    : 카드 상단 라벨
+   type    : 'class'(수업) | 'demo'(발표) | 'eval'(평가) — 필터·색상 인디케이터
+   badge   : 우측 상단 배지 문구
+   title   : 커리큘럼명 (Notion 원문 그대로)
+   summary : 두 줄 요약 배열 (반드시 2개 항목)
+   tags    : 키워드 배열 (검색 대상에 포함됨)
+   thumb   : assets/img 안의 파일명
+   link    : 강의교안 페이지 경로. 빈 문자열이면 '준비 중'으로 표시됨
    ========================================================================== */
 
 const WEEKS = [
   {
-    id: 'ot',
-    week: 'OT',
-    type: 'class',
-    badge: '안내',
-    title: '오리엔테이션',
-    desc: '성적 평가기준과 수업 운영 방식, 팀 편성 절차를 확인한다',
-    tags: ['성적 평가기준', '수업 운영', '팀 편성'],
-    thumb: '1.png',
-    link: 'pages/ot.html'
+    no: 1, week: 'WEEK 01', type: 'class', badge: '수업',
+    title: '오리엔테이션 및 생성형 AI 개요',
+    summary: [
+      '수업 운영 방식과 성적 평가 기준을 확인하고 생성형 AI와 거대언어모델의 개념·발전 과정을 이해한다',
+      '프롬프트·모델·응답 등 기본 용어를 정리하고 교육과 산업의 활용 사례를 탐색한다'
+    ],
+    tags: ['생성형 AI 개요', 'LLM', '수업 운영'],
+    thumb: '1.png', link: ''
   },
   {
-    id: 'w01',
-    week: 'WEEK 01',
-    type: 'class',
-    badge: '수업',
-    title: '생성형 AI 이해와 활용 지도',
-    desc: '생성형 AI의 동작 원리와 대표 도구의 차이를 비교해 활용 범위를 잡는다',
-    tags: ['LLM', '멀티모달', '도구 비교'],
-    thumb: '2.png',
-    link: 'pages/week01.html'
+    no: 2, week: 'WEEK 02', type: 'class', badge: '수업',
+    title: 'LLM의 원리와 기본 질문법',
+    summary: [
+      '토큰·컨텍스트·확률적 생성 원리를 이해하고 역할·목적·맥락·조건·출력 형식으로 프롬프트를 구조화한다',
+      '좋은 질문과 나쁜 질문을 비교하며 환각·편향·최신성 한계를 검증하는 방법을 익힌다'
+    ],
+    tags: ['토큰', '프롬프트 구조', '사실 검증'],
+    thumb: '2.png', link: ''
   },
   {
-    id: 'w02',
-    week: 'WEEK 02',
-    type: 'class',
-    badge: '수업',
-    title: '프롬프트 엔지니어링 기초',
-    desc: '역할·맥락·제약·출력형식 네 요소로 프롬프트를 구조화한다',
-    tags: ['Role', 'Context', 'Output Format'],
-    thumb: '3.png',
-    link: ''
+    no: 3, week: 'WEEK 03', type: 'class', badge: '수업',
+    title: '주요 AI 플랫폼과 확장 기능 탐색',
+    summary: [
+      'ChatGPT·Gemini·Claude의 인터페이스와 강점, 제약을 비교해 상황별 적합한 플랫폼을 선택한다',
+      '웹 검색·파일 업로드·GPTs·Gems 등 확장 기능으로 답변의 근거와 맥락을 강화한다'
+    ],
+    tags: ['플랫폼 비교', 'GPTs', 'Gems'],
+    thumb: '3.png', link: ''
   },
   {
-    id: 'w03',
-    week: 'WEEK 03',
-    type: 'class',
-    badge: '수업',
-    title: '팀 AI 비서 문제 정의',
-    desc: '핵심 사용자와 반복 업무를 분석해 팀 프로젝트 주제를 확정한다',
-    tags: ['Persona', 'Pain Point', '문제 정의서'],
-    thumb: '4.png',
-    link: ''
+    no: 4, week: 'WEEK 04', type: 'class', badge: '수업',
+    title: '프로젝트 유형 탐색과 AI 아이데이션',
+    summary: [
+      '앱·웹, 업무 자동화, 콘텐츠, 데이터 분석 등 프로젝트 유형별 사용자 가치와 산출물을 비교한다',
+      'SCAMPER와 5 Whys로 아이디어를 발산하고 평가 매트릭스로 팀 프로젝트 후보를 선정한다'
+    ],
+    tags: ['아이데이션', 'SCAMPER', '평가 매트릭스'],
+    thumb: '4.png', link: ''
   },
   {
-    id: 'w04',
-    week: 'WEEK 04',
-    type: 'class',
-    badge: '수업',
-    title: '사용자 리서치와 시나리오 설계',
-    desc: '인터뷰와 데스크 리서치로 비서가 처리할 과업 시나리오를 설계한다',
-    tags: ['User Research', 'Task Flow', '시나리오'],
-    thumb: '5.png',
-    link: ''
+    no: 5, week: 'WEEK 05', type: 'class', badge: '수업',
+    title: '나만의 AI 비서 설계',
+    summary: [
+      '목적에 맞는 AI 비서의 역할과 사용자 시나리오를 정의하고 지침·말투·출력 형식을 설계한다',
+      '외부 지식과 시작 질문으로 맥락을 구성한 뒤 테스트 질문으로 응답 일관성과 정확성을 개선한다'
+    ],
+    tags: ['맞춤형 GPT', '지침 설계', '프로토타입'],
+    thumb: '5.png', link: ''
   },
   {
-    id: 'w05',
-    week: 'WEEK 05',
-    type: 'class',
-    badge: '수업',
-    title: '프롬프트 설계 심화',
-    desc: 'Few-shot과 Chain-of-Thought로 출력 품질과 일관성을 끌어올린다',
-    tags: ['Few-shot', 'CoT', 'Self-Consistency'],
-    thumb: '6.png',
-    link: ''
+    no: 6, week: 'WEEK 06', type: 'class', badge: '수업',
+    title: '멀티모달 AI와 프로젝트 활용',
+    summary: [
+      '텍스트·이미지·음성·비디오·코드 생성 도구의 특징을 이해하고 프로젝트 목적에 맞게 선택한다',
+      '결과물을 연결해 하나의 사용자 경험을 설계하고 저작권·초상권·개인정보 주의사항을 점검한다'
+    ],
+    tags: ['멀티모달', '콘텐츠 생성', '저작권'],
+    thumb: '6.png', link: ''
   },
   {
-    id: 'w06',
-    week: 'WEEK 06',
-    type: 'class',
-    badge: '수업',
-    title: '데이터 수집과 문서 정제',
-    desc: '비서가 참조할 원본 문서를 수집하고 청크 단위로 정제한다',
-    tags: ['Data Cleaning', 'Chunking', '메타데이터'],
-    thumb: '7.png',
-    link: ''
+    no: 7, week: 'WEEK 07', type: 'class', badge: '수업',
+    title: '프로젝트 방향성 검증과 AI 활용 사례',
+    summary: [
+      '팀별 주제와 목표 사용자, 문제 정의를 점검하고 기존 방식 대비 차별성을 검토한다',
+      '기술적 실현 가능성과 데이터 확보, 윤리·저작권 위험을 확인해 프로젝트 범위를 조정한다'
+    ],
+    tags: ['기획 검증', '실현 가능성', '위험 검토'],
+    thumb: '7.png', link: ''
   },
   {
-    id: 'w07',
-    week: 'WEEK 07',
-    type: 'class',
-    badge: '수업',
-    title: 'RAG 구조와 지식베이스 구축',
-    desc: '검색 증강 생성 구조를 이해하고 팀 지식베이스를 연결한다',
-    tags: ['RAG', 'Embedding', 'Knowledge Base'],
-    thumb: '8.png',
-    link: ''
+    no: 8, week: 'WEEK 08', type: 'eval', badge: '평가',
+    title: '직무수행능력평가 1차(중간고사)',
+    summary: [
+      '1~7주차 강의교안 전체를 시험 범위로 한다',
+      '객관식과 주관식 필기시험으로 개념 이해도를 평가한다'
+    ],
+    tags: ['중간고사', '필기시험'],
+    thumb: '8.png', link: ''
   },
   {
-    id: 'w08',
-    week: 'WEEK 08',
-    type: 'eval',
-    badge: '평가',
-    title: '중간고사 및 중간 점검',
-    desc: '1~7주차 개념을 필기로 평가하고 팀 산출물 진행 상태를 점검한다',
-    tags: ['중간고사', '산출물 점검'],
-    thumb: '9.png',
-    link: ''
+    no: 9, week: 'WEEK 09', type: 'class', badge: '수업',
+    title: 'MVP 정의와 PRD 작성',
+    summary: [
+      '최종 문제 정의와 목표 사용자, 핵심 가치를 확정하고 필수·선택·제외 기능의 우선순위를 정한다',
+      'MVP 범위와 성공 기준, 제약조건을 담은 PRD와 구현 일정·역할 분담 계획을 작성한다'
+    ],
+    tags: ['MVP', 'PRD', '기능 우선순위'],
+    thumb: '9.png', link: ''
   },
   {
-    id: 'w09',
-    week: 'WEEK 09',
-    type: 'class',
-    badge: '수업',
-    title: '노코드 챗봇 구현',
-    desc: '노코드 도구로 팀 AI 비서의 첫 동작 버전을 만든다',
-    tags: ['No-code', 'Chatbot', 'MVP'],
-    thumb: '10.png',
-    link: ''
+    no: 10, week: 'WEEK 10', type: 'demo', badge: '발표',
+    title: '프로젝트 중간 발표와 피드백',
+    summary: [
+      '문제 정의와 사용자 가치, MVP 범위와 구현 계획을 발표하고 프로토타입 진행 결과를 시연한다',
+      '동료와 교수 피드백으로 개선 과제를 도출해 기능 범위·일정·역할을 재조정한다'
+    ],
+    tags: ['중간 발표', '피드백', '실행계획'],
+    thumb: '10.png', link: ''
   },
   {
-    id: 'w10',
-    week: 'WEEK 10',
-    type: 'class',
-    badge: '수업',
-    title: '이미지·영상 생성 활용',
-    desc: '비서의 결과물을 시각 자산으로 확장하는 멀티모달 실습을 진행한다',
-    tags: ['Image Gen', 'Video Gen', '브랜딩'],
-    thumb: '11.png',
-    link: ''
+    no: 11, week: 'WEEK 11', type: 'class', badge: '수업',
+    title: 'AI 기반 슬라이드 제작과 발표 자동화',
+    summary: [
+      '프로젝트 자료를 핵심 메시지와 발표 스토리로 구조화하고 AI로 목차·슬라이드 메시지·대본을 생성한다',
+      'Gamma·Canva·PowerPoint 등 도구를 비교해 발표 슬라이드 초안과 예상 질의응답을 준비한다'
+    ],
+    tags: ['슬라이드 제작', '발표 대본', 'Gamma'],
+    thumb: '11.png', link: ''
   },
   {
-    id: 'w11',
-    week: 'WEEK 11',
-    type: 'class',
-    badge: '수업',
-    title: '자동화 워크플로 연결',
-    desc: '외부 도구와 비서를 연결해 반복 업무를 자동으로 처리한다',
-    tags: ['Workflow', 'API', '자동화'],
-    thumb: '12.png',
-    link: ''
+    no: 12, week: 'WEEK 12', type: 'class', badge: '수업',
+    title: '사용자 테스트와 프로젝트 개선',
+    summary: [
+      '기능·사용성 테스트와 생성 결과 품질평가 기준을 세워 정확성·관련성·일관성 관점에서 검증한다',
+      '관찰과 인터뷰로 개선 요구를 수집해 우선순위와 실행 계획을 담은 개선 백로그를 만든다'
+    ],
+    tags: ['사용자 테스트', '품질 평가', '개선 백로그'],
+    thumb: '12.png', link: ''
+  },
+  {
+    no: 13, week: 'WEEK 13', type: 'class', badge: '수업',
+    title: '최종 구현 점검과 발표 준비',
+    summary: [
+      'QA 체크리스트로 기능·콘텐츠·디자인·사용 흐름을 점검하고 결함을 심각도에 따라 수정한다',
+      '개인정보·저작권·편향 등 AI 윤리 항목을 확인하고 발표자료와 시연 시나리오로 리허설을 진행한다'
+    ],
+    tags: ['QA 체크리스트', 'AI 윤리', '리허설'],
+    thumb: '13.png', link: ''
+  },
+  {
+    no: 14, week: 'WEEK 14', type: 'demo', badge: '발표',
+    title: '최종 프로젝트 발표',
+    summary: [
+      '최종 결과물과 핵심 기능을 시연하며 목표 사용자, AI 활용 방식과 차별성을 설명한다',
+      '질의응답으로 의사결정 과정을 밝히고 동료평가·자기평가로 프로젝트 수행을 성찰한다'
+    ],
+    tags: ['최종 발표', '시연', '프로젝트 보고서'],
+    thumb: '14.png', link: ''
+  },
+  {
+    no: 15, week: 'WEEK 15', type: 'eval', badge: '평가',
+    title: '기말고사: 최종 평가와 프로젝트 회고',
+    summary: [
+      '1~7주차 강의교안을 범위로 객관식·주관식 필기시험을 실시한다',
+      '팀 프로젝트 최종 산출물을 기준으로 팀 성적을 처리한다'
+    ],
+    tags: ['기말고사', '회고', '팀 성적'],
+    thumb: '15.png', link: ''
   }
 ];
 
 /* --------------------------------------------------------------------------
    팀 현황 데이터
-   done  : 제출 완료한 산출물 수
-   total : 전체 산출물 단계 수
-   url   : 배포 URL. 빈 문자열이면 '배포 전' 으로 표시된다.
+   cls   : 'A' | 'B' | 'C' — 분반 필터에 사용됨
+   done  : 제출 완료 산출물 수 / total : 전체 산출물 단계 수
+   url   : 팀 결과물 URL. 빈 문자열이면 '배포 전'으로 표시됨
+   팀 수는 제한이 없으며 행을 추가하면 그리드에 그대로 이어짐
    -------------------------------------------------------------------------- */
 
 const TEAMS = [
-  { name: '1팀', topic: '학과 공지 요약 비서', members: 5, done: 4, total: 12, url: '' },
-  { name: '2팀', topic: '취업 자소서 첨삭 비서', members: 5, done: 3, total: 12, url: '' },
-  { name: '3팀', topic: '스터디 일정 조율 비서', members: 4, done: 5, total: 12, url: '' },
-  { name: '4팀', topic: '강의 노트 정리 비서', members: 5, done: 2, total: 12, url: '' }
+  { cls: 'A', name: 'A-1팀', topic: '학과 공지 요약 비서', members: 5, done: 4, total: 12, url: '' },
+  { cls: 'A', name: 'A-2팀', topic: '자기소개서 첨삭 비서', members: 5, done: 3, total: 12, url: '' },
+  { cls: 'A', name: 'A-3팀', topic: '스터디 일정 조율 비서', members: 4, done: 5, total: 12, url: '' },
+  { cls: 'B', name: 'B-1팀', topic: '강의 노트 정리 도우미', members: 5, done: 2, total: 12, url: '' },
+  { cls: 'B', name: 'B-2팀', topic: '동아리 홍보 콘텐츠 생성기', members: 4, done: 6, total: 12, url: '' },
+  { cls: 'C', name: 'C-1팀', topic: '캠퍼스 맛집 추천 챗봇', members: 5, done: 3, total: 12, url: '' },
+  { cls: 'C', name: 'C-2팀', topic: '전공 용어 학습 비서', members: 4, done: 4, total: 12, url: '' }
 ];
+
+/* 팀 현황 전체 보기 CTA가 연결될 주소 (Notion 팀 현황 보드 등) */
+const TEAM_STATUS_URL = 'https://www.notion.so/';

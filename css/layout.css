@@ -85,23 +85,16 @@
 /* ---------- 히어로 ---------- */
 .hero {
   position: relative;
+  isolation: isolate;
   overflow: hidden;
   background:
     radial-gradient(120% 90% at 88% 0%, #33256F 0%, transparent 58%),
     linear-gradient(168deg, var(--violet-900) 0%, var(--violet-950) 100%);
 }
 
-.hero-glow {
-  position: absolute;
-  left: -180px; bottom: -280px;
-  width: 720px; height: 720px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(35, 214, 174, .26) 0%, transparent 66%);
-  pointer-events: none;
-}
-
 .hero-inner {
   position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 400px;
   align-items: center;
@@ -211,13 +204,26 @@
   font-size: var(--fs-base);
 }
 
+.empty-state--light { color: var(--violet-200); }
+
 /* ---------- 팀 현황 ---------- */
 .teams {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   background:
     radial-gradient(110% 120% at 10% 0%, #2E2168 0%, transparent 60%),
     var(--violet-950);
   padding-block: 86px 96px;
 }
+
+.teams-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.teams .shell { position: relative; z-index: 1; }
 
 .team-grid {
   display: grid;
@@ -269,7 +275,15 @@
 @media (max-width: 1180px) {
   :root { --fs-3xl: 50px; --fs-2xl: 36px; --grid-gap: 22px; }
   .hero-inner { grid-template-columns: 1fr; gap: 48px; padding-block: 76px 84px; }
-  .card-grid, .team-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .card-grid, .teams-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.teams .shell { position: relative; z-index: 1; }
+
+.team-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .statbar-inner { grid-template-columns: repeat(2, 1fr); }
   .stat:nth-child(3) { border-left: 0; padding-left: 0; }
 }
@@ -278,13 +292,32 @@
   :root { --shell-pad: 24px; --fs-3xl: 40px; --fs-2xl: 30px; }
   .header-inner { height: 72px; gap: 16px; }
   .header-nav .nav-link:not(.nav-link--cta) { display: none; }
-  .card-grid, .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .card-grid, .teams-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.teams .shell { position: relative; z-index: 1; }
+
+.team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .section-head { flex-direction: column; align-items: flex-start; gap: 20px; }
   .footer-inner { flex-direction: column; align-items: flex-start; }
+  .filter-bar { flex-direction: column; align-items: stretch; }
+  .search { width: 100%; }
+  .teams-cta { flex-direction: column; align-items: flex-start; gap: 12px; }
 }
 
 @media (max-width: 560px) {
-  .card-grid, .team-grid { grid-template-columns: 1fr; }
+  .card-grid, .teams-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.teams .shell { position: relative; z-index: 1; }
+
+.team-grid { grid-template-columns: 1fr; }
   .statbar-inner { grid-template-columns: 1fr; }
   .stat { border-left: 0; padding: 22px 0; }
   .stat + .stat { border-top: 1px solid var(--line); }

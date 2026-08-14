@@ -1,5 +1,6 @@
 /* ==========================================================================
-   components.css — 버튼, 체인 패널, 검색, 칩, 카드, 팀 카드
+   components.css — 버튼, 흐름 패널, 검색, 칩, 주차 카드, 팀 카드
+   호버 및 등장 모션은 motion.css 에서 관리함
    ========================================================================== */
 
 /* ---------- 버튼 ---------- */
@@ -12,29 +13,38 @@
   font-size: var(--fs-xs);
   font-weight: 600;
   letter-spacing: .03em;
-  transition: transform .2s var(--ease), background-color .2s var(--ease),
-              color .2s var(--ease), box-shadow .2s var(--ease);
+  transition: transform .25s var(--ease), background-color .25s var(--ease),
+              color .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease);
 }
+.btn:hover { transform: translateY(-2px); }
 
 .btn-primary {
   background: linear-gradient(120deg, var(--violet-600), var(--mint-500));
   color: #fff;
   box-shadow: 0 12px 30px rgba(108, 76, 241, .38);
 }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(35, 214, 174, .34); }
+.btn-primary:hover { box-shadow: 0 18px 40px rgba(35, 214, 174, .34); }
 
 .btn-ghost {
   border: 1px solid rgba(255, 255, 255, .28);
   color: var(--violet-200);
 }
-.btn-ghost:hover { border-color: var(--mint-300); color: #fff; }
+.btn-ghost:hover { border-color: var(--mint-300); color: #fff; background: rgba(255,255,255,.06); }
 
-/* ---------- 시그니처: 산출물 체인 패널 ---------- */
-.chain-panel {
+.btn-mint {
+  background: var(--mint-500);
+  color: var(--violet-950);
+  box-shadow: 0 12px 30px rgba(35, 214, 174, .3);
+}
+.btn-mint:hover { box-shadow: 0 18px 40px rgba(35, 214, 174, .42); }
+
+/* ---------- 시그니처: 학기 흐름 패널 ---------- */
+.flow-panel {
+  position: relative;
   padding: 34px 32px;
   border: 1px solid var(--line-dark);
   border-radius: var(--radius-lg);
-  background: linear-gradient(170deg, rgba(42, 31, 94, .82), rgba(20, 16, 42, .72));
+  background: linear-gradient(170deg, rgba(42, 31, 94, .82), rgba(20, 16, 42, .74));
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -48,27 +58,27 @@
   letter-spacing: .2em;
 }
 
-.chain-list { position: relative; }
+.flow-list { position: relative; }
 
 /* 단계를 잇는 민트 라인 */
-.chain-list::before {
+.flow-list::before {
   content: '';
   position: absolute;
-  left: 15px; top: 12px; bottom: 30px;
+  left: 15px; top: 14px; bottom: 30px;
   width: 1px;
-  background: linear-gradient(180deg, var(--mint-500), rgba(129, 104, 255, .2));
+  background: linear-gradient(180deg, var(--mint-500), rgba(129, 104, 255, .22));
 }
 
-.chain-item {
+.flow-item {
   position: relative;
   display: grid;
   grid-template-columns: 44px 1fr;
   align-items: start;
   gap: 8px;
 }
-.chain-item + .chain-item { margin-top: 26px; }
+.flow-item + .flow-item { margin-top: 24px; }
 
-.chain-num {
+.flow-num {
   position: relative;
   z-index: 1;
   display: grid;
@@ -76,23 +86,23 @@
   width: 31px; height: 31px;
   border-radius: 50%;
   background: var(--violet-950);
-  border: 1px solid var(--mint-500);
+  border: 1px solid rgba(35, 214, 174, .5);
   color: var(--mint-300);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: 600;
 }
 
-.chain-name {
-  color: #fff;
+.flow-name {
+  color: var(--violet-200);
   font-size: var(--fs-base);
   font-weight: 600;
   letter-spacing: -.02em;
 }
 
-.chain-desc {
+.flow-desc {
   margin-top: 2px;
-  color: var(--violet-200);
+  color: var(--ink-300);
   font-size: var(--fs-xs);
   font-weight: 300;
   line-height: 1.6;
@@ -101,15 +111,17 @@
 /* ---------- 범례 ---------- */
 .legend {
   display: flex;
-  gap: 20px;
+  gap: 18px;
   color: var(--ink-500);
   font-size: var(--fs-xs);
+  white-space: nowrap;
 }
 .legend li { display: flex; align-items: center; gap: 7px; }
 
 .dot { width: 9px; height: 9px; border-radius: 50%; }
 .dot--class { background: var(--violet-600); }
-.dot--eval { background: var(--mint-500); }
+.dot--demo  { background: var(--violet-200); }
+.dot--eval  { background: var(--mint-500); }
 
 /* ---------- 필터 바 ---------- */
 .filter-bar {
@@ -120,10 +132,7 @@
   margin-bottom: 30px;
 }
 
-.search {
-  position: relative;
-  width: 340px;
-}
+.search { position: relative; width: 340px; }
 
 .search-icon {
   position: absolute;
@@ -142,7 +151,6 @@
   background: var(--paper);
   font-size: var(--fs-xs);
   color: var(--ink-900);
-  transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
 }
 .search input::placeholder { color: var(--ink-300); }
 .search input:focus {
@@ -151,7 +159,7 @@
   box-shadow: 0 0 0 4px rgba(129, 104, 255, .16);
 }
 
-.chips { display: flex; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .chip {
   padding: 11px 22px;
@@ -161,7 +169,6 @@
   color: var(--ink-500);
   font-size: var(--fs-xs);
   font-weight: 500;
-  transition: all .2s var(--ease);
 }
 .chip:hover { border-color: var(--violet-200); color: var(--violet-600); }
 
@@ -169,6 +176,19 @@
   background: var(--violet-900);
   border-color: var(--violet-900);
   color: #fff;
+}
+
+/* 어두운 배경용 칩 */
+.chips--light .chip {
+  background: rgba(255, 255, 255, .06);
+  border-color: var(--line-dark);
+  color: var(--violet-200);
+}
+.chips--light .chip:hover { border-color: var(--mint-500); color: #fff; }
+.chips--light .chip.is-active {
+  background: var(--mint-500);
+  border-color: var(--mint-500);
+  color: var(--violet-950);
 }
 
 /* ---------- 주차 카드 ---------- */
@@ -180,13 +200,8 @@
   border-radius: var(--radius-md);
   background: var(--paper);
   box-shadow: var(--shadow-card);
-  transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease);
 }
-.card:hover {
-  transform: translateY(-5px);
-  border-color: var(--violet-200);
-  box-shadow: var(--shadow-card-hover);
-}
+.card:hover { border-color: var(--violet-200); box-shadow: var(--shadow-card-hover); }
 
 /* 유형별 상단 인디케이터 */
 .card::before {
@@ -195,6 +210,7 @@
   height: 3px;
   background: var(--violet-600);
 }
+.card--demo::before { background: var(--violet-200); }
 .card--eval::before { background: var(--mint-500); }
 
 .card-thumb {
@@ -206,13 +222,7 @@
   background: linear-gradient(140deg, var(--violet-050), var(--mint-050));
 }
 
-.card-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform .5s var(--ease);
-}
-.card:hover .card-thumb img { transform: scale(1.045); }
+.card-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
 /* 이미지가 아직 없을 때 노출되는 대체 표기 */
 .thumb-fallback {
@@ -222,7 +232,7 @@
   place-items: center;
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  letter-spacing: .12em;
+  letter-spacing: .14em;
   color: var(--violet-500);
 }
 
@@ -257,6 +267,7 @@
   font-size: var(--fs-xs);
   font-weight: 500;
 }
+.badge--demo { background: #F0EBFF; color: #5B3ED6; }
 .badge--eval { background: var(--mint-050); color: var(--mint-600); }
 
 .card-title {
@@ -264,22 +275,31 @@
   font-size: var(--fs-md);
   font-weight: 600;
   letter-spacing: -.025em;
-  line-height: 1.42;
+  line-height: 1.4;
+  word-break: keep-all;
 }
 
-.card-desc {
-  margin-top: 9px;
+/* 두 줄 요약 */
+.card-summary {
+  margin-top: 10px;
+  padding-left: 11px;
+  border-left: 2px solid var(--line);
+}
+
+.card-summary li {
   color: var(--ink-500);
   font-size: var(--fs-xs);
   font-weight: 300;
-  line-height: 1.66;
+  line-height: 1.62;
+  word-break: keep-all;
 }
+.card-summary li + li { margin-top: 5px; }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 16px;
+  margin: 14px 0 18px;
 }
 
 .tag {
@@ -293,20 +313,22 @@
 }
 
 .card-cta {
-  display: block;
-  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: auto;
   padding: 13px 16px;
   border-radius: var(--radius-sm);
   background: var(--violet-900);
   color: #fff;
   font-size: var(--fs-xs);
   font-weight: 600;
-  text-align: center;
-  transition: background-color .2s var(--ease), color .2s var(--ease);
 }
 .card-cta:hover { background: var(--violet-600); }
 
 .card-cta--soon {
+  margin-top: auto;
   background: var(--paper-tint);
   border: 1px solid var(--line);
   color: var(--ink-300);
@@ -314,27 +336,27 @@
 }
 .card-cta--soon:hover { background: var(--paper-tint); color: var(--ink-300); }
 
-/* 카드 등장 모션 */
-.card {
-  opacity: 0;
-  transform: translateY(16px);
-}
-.card.is-in {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity .5s var(--ease), transform .5s var(--ease),
-              box-shadow .25s var(--ease), border-color .25s var(--ease);
-}
-
 /* ---------- 팀 카드 ---------- */
 .team-card {
   padding: 24px 24px 22px;
   border: 1px solid var(--line-dark);
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, .05);
-  transition: border-color .25s var(--ease), background-color .25s var(--ease);
 }
-.team-card:hover { border-color: var(--mint-500); background: rgba(255, 255, 255, .08); }
+.team-card:hover { border-color: var(--mint-500); background: rgba(255, 255, 255, .09); }
+
+.team-class {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(129, 104, 255, .22);
+  color: var(--violet-200);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: .08em;
+}
 
 .team-name {
   color: #fff;
@@ -349,6 +371,7 @@
   font-size: var(--fs-xs);
   font-weight: 300;
   line-height: 1.6;
+  word-break: keep-all;
 }
 
 .team-progress {
@@ -381,10 +404,21 @@
   letter-spacing: .06em;
 }
 
-.team-link {
-  color: var(--mint-300);
-  font-size: var(--fs-xs);
-  font-weight: 500;
-}
+.team-link { color: var(--mint-300); font-size: var(--fs-xs); font-weight: 500; }
 .team-link:hover { color: #fff; }
 .team-link[aria-disabled="true"] { color: var(--ink-300); pointer-events: none; }
+
+/* ---------- 팀 현황 CTA ---------- */
+.teams-cta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line-dark);
+}
+
+.teams-cta-note {
+  color: var(--ink-300);
+  font-size: var(--fs-xs);
+}

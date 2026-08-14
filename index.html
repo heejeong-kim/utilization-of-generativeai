@@ -4,22 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>생성형 AI 활용 · 강의교안</title>
-<meta name="description" content="1주차부터 15주차까지 생성형 AI 활용 강의교안과 팀 프로젝트 산출물을 하나의 웹뷰에서 확인한다">
+<meta name="description" content="2026학년도 2학기 생성형 AI 활용 15주차 강의교안과 팀 프로젝트 현황을 하나의 웹뷰에서 확인한다">
 
-<!-- 오픈그래프 -->
 <meta property="og:title" content="생성형 AI 활용 · 강의교안">
-<meta property="og:description" content="강의교안에서 팀 AI 비서까지, 15주 산출물 체인">
+<meta property="og:description" content="강의교안에서 팀 프로젝트 발표까지, 15주 커리큘럼">
 <meta property="og:type" content="website">
 
-<!-- 폰트: IBM Plex Sans KR + IBM Plex Mono(유틸리티) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-<!-- 스타일 -->
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/layout.css">
 <link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/motion.css">
 </head>
 <body>
 
@@ -32,72 +30,84 @@
       <span class="brand-mark" aria-hidden="true">AI</span>
       <span class="brand-text">
         <strong class="brand-title">생성형 AI 활용</strong>
-        <span class="brand-sub">2026 · 2학기 · 강의교안 웹뷰</span>
+        <span class="brand-sub">2026 · 2학기 · 강의교안</span>
       </span>
     </a>
 
     <nav class="header-nav" aria-label="주요 메뉴">
       <a class="nav-link" href="#weekly">주차별 강의교안</a>
-      <a class="nav-link" href="#chain">산출물 체인</a>
       <a class="nav-link nav-link--cta" href="#teams">팀 현황</a>
     </nav>
   </div>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 </header>
 
 <main>
 
   <!-- ===== 히어로 ===== -->
   <section class="hero" aria-labelledby="hero-title">
-    <div class="hero-glow" aria-hidden="true"></div>
-    <div class="shell hero-inner">
+    <!-- 스크롤과 무관하게 상시 구동되는 앰비언트 배경 레이어 -->
+    <div class="hero-ambient" aria-hidden="true">
+      <span class="orb orb--violet"></span>
+      <span class="orb orb--mint"></span>
+      <span class="orb orb--deep"></span>
+      <span class="hero-grid"></span>
+      <span class="hero-scan"></span>
+    </div>
+
+    <div class="shell hero-inner" id="heroParallax">
 
       <div class="hero-copy">
-        <p class="eyebrow">GENERATIVE AI · COURSE LAB</p>
-        <h1 class="hero-title" id="hero-title">
+        <p class="eyebrow reveal" data-reveal-delay="0">GENERATIVE AI · COURSE LAB</p>
+        <h1 class="hero-title reveal" data-reveal-delay="80" id="hero-title">
           강의교안에서<br>
-          <span class="grad">팀 AI 비서</span>까지
+          <span class="grad grad--live">팀 프로젝트</span>까지
         </h1>
-        <p class="hero-lead">
-          1주차부터 15주차까지 개념 학습과 실습 산출물이 하나의 흐름으로 이어진다.<br>
+        <p class="hero-lead reveal" data-reveal-delay="160">
+          1주차부터 15주차까지 개념 학습과 프로젝트 산출물이 하나의 흐름으로 이어진다.<br>
           매주 강의교안에서 개념을 확인하고, 같은 화면에서 팀 산출물을 쌓아 올린다.
         </p>
 
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="#weekly">주차별 교안 보기 <span aria-hidden="true">↓</span></a>
-          <a class="btn btn-ghost" href="#teams">팀 현황 확인</a>
+        <div class="hero-actions reveal" data-reveal-delay="240">
+          <a class="btn btn-primary" href="#weekly">
+            주차별 교안 보기 <span class="btn-arrow btn-arrow--down" aria-hidden="true">↓</span>
+          </a>
+          <a class="btn btn-ghost" href="#teams">
+            팀 현황 바로가기 <span class="btn-arrow" aria-hidden="true">→</span>
+          </a>
         </div>
       </div>
 
-      <!-- 시그니처: 산출물 체인 패널 -->
-      <aside class="chain-panel" id="chain" aria-labelledby="chain-title">
-        <p class="panel-label" id="chain-title">SEMESTER FLOW</p>
-        <ol class="chain-list">
-          <li class="chain-item">
-            <span class="chain-num">01</span>
-            <div class="chain-body">
-              <p class="chain-name">이해 · 기획</p>
-              <p class="chain-desc">생성형 AI 원리 → 문제 정의 → 비서 콘셉트</p>
+      <!-- 시그니처: 학기 흐름 패널 (진행 표시가 상시 순환함) -->
+      <aside class="flow-panel reveal" data-reveal-delay="320" aria-labelledby="flow-title">
+        <p class="panel-label" id="flow-title">SEMESTER FLOW</p>
+        <ol class="flow-list">
+          <li class="flow-item" data-step="0">
+            <span class="flow-num">01</span>
+            <div class="flow-body">
+              <p class="flow-name">이해 · 탐색</p>
+              <p class="flow-desc">1~3주차 · LLM 원리 → 질문법 → 플랫폼 비교</p>
             </div>
           </li>
-          <li class="chain-item">
-            <span class="chain-num">02</span>
-            <div class="chain-body">
-              <p class="chain-name">프롬프트 · 데이터</p>
-              <p class="chain-desc">프롬프트 설계 → 문서 정제 → 지식베이스</p>
+          <li class="flow-item" data-step="1">
+            <span class="flow-num">02</span>
+            <div class="flow-body">
+              <p class="flow-name">기획 · 설계</p>
+              <p class="flow-desc">4~7주차 · 아이데이션 → AI 비서 → 방향성 검증</p>
             </div>
           </li>
-          <li class="chain-item">
-            <span class="chain-num">03</span>
-            <div class="chain-body">
-              <p class="chain-name">구현 · 확장</p>
-              <p class="chain-desc">챗봇 구현 → 멀티모달 → 자동화 연결</p>
+          <li class="flow-item" data-step="2">
+            <span class="flow-num">03</span>
+            <div class="flow-body">
+              <p class="flow-name">구현 · 검증</p>
+              <p class="flow-desc">9~12주차 · PRD → 중간 발표 → 사용자 테스트</p>
             </div>
           </li>
-          <li class="chain-item">
-            <span class="chain-num">04</span>
-            <div class="chain-body">
-              <p class="chain-name">검증 · 발표</p>
-              <p class="chain-desc">테스트 → 개선 → 배포 → 최종 발표</p>
+          <li class="flow-item" data-step="3">
+            <span class="flow-num">04</span>
+            <div class="flow-body">
+              <p class="flow-name">완성 · 평가</p>
+              <p class="flow-desc">13~15주차 · 최종 QA → 발표 → 기말고사</p>
             </div>
           </li>
         </ol>
@@ -109,21 +119,21 @@
   <!-- ===== 지표 바 ===== -->
   <section class="statbar" aria-label="과목 요약">
     <div class="shell statbar-inner">
-      <div class="stat">
+      <div class="stat reveal" data-reveal-delay="0">
         <p class="stat-key">15주</p>
         <p class="stat-val">하나의 프로젝트 흐름</p>
       </div>
-      <div class="stat">
-        <p class="stat-key">필수</p>
-        <p class="stat-val">프롬프트 · 문서 정제 · 챗봇 구현</p>
+      <div class="stat reveal" data-reveal-delay="60">
+        <p class="stat-key">기초</p>
+        <p class="stat-val">LLM 원리 · 프롬프트 · 플랫폼 비교</p>
       </div>
-      <div class="stat">
+      <div class="stat reveal" data-reveal-delay="120">
         <p class="stat-key">심화</p>
-        <p class="stat-val">RAG · 멀티모달 · 워크플로 자동화</p>
+        <p class="stat-val">AI 비서 · 멀티모달 · PRD · 사용자 테스트</p>
       </div>
-      <div class="stat">
+      <div class="stat reveal" data-reveal-delay="180">
         <p class="stat-key">최종</p>
-        <p class="stat-val">팀 AI 비서 배포 URL 및 발표</p>
+        <p class="stat-val">프로젝트 발표 및 기말 평가</p>
       </div>
     </div>
   </section>
@@ -134,19 +144,20 @@
 
       <div class="section-head">
         <div class="section-head-copy">
-          <p class="eyebrow eyebrow--dark">WEEKLY CLASS</p>
-          <h2 class="section-title" id="weekly-title">주차별 강의교안</h2>
-          <p class="section-desc">
-            각 주차의 강의교안은 별도 페이지에서 읽고, 실습 프롬프트와 코드 예제를 바로 복사해 사용한다.
+          <p class="eyebrow eyebrow--dark reveal">WEEKLY CLASS</p>
+          <h2 class="section-title reveal" data-reveal-delay="60" id="weekly-title">주차별 강의교안</h2>
+          <p class="section-desc reveal" data-reveal-delay="120">
+            각 주차의 강의교안은 별도 페이지에서 읽고, 실습 프롬프트와 산출물 양식을 바로 확인한다.
           </p>
         </div>
-        <ul class="legend" aria-hidden="true">
+        <ul class="legend reveal" data-reveal-delay="120" aria-hidden="true">
           <li><span class="dot dot--class"></span>수업</li>
+          <li><span class="dot dot--demo"></span>발표</li>
           <li><span class="dot dot--eval"></span>평가</li>
         </ul>
       </div>
 
-      <div class="filter-bar">
+      <div class="filter-bar reveal" data-reveal-delay="160">
         <div class="search">
           <span class="search-icon" aria-hidden="true">⌕</span>
           <label class="sr-only" for="searchInput">주차 또는 키워드 검색</label>
@@ -156,12 +167,13 @@
         <div class="chips" role="group" aria-label="유형 필터">
           <button type="button" class="chip is-active" data-filter="all">전체</button>
           <button type="button" class="chip" data-filter="class">수업</button>
+          <button type="button" class="chip" data-filter="demo">발표</button>
           <button type="button" class="chip" data-filter="eval">평가</button>
         </div>
       </div>
 
       <div class="card-grid" id="cardGrid">
-        <!-- js/data.js 의 배열을 기준으로 렌더링된다 -->
+        <!-- js/data.js 의 WEEKS 배열을 기준으로 렌더링된다 -->
       </div>
 
       <p class="empty-state" id="emptyState" hidden>
@@ -177,20 +189,41 @@
 
   <!-- ===== 팀 현황 ===== -->
   <section class="teams" id="teams" aria-labelledby="teams-title">
+    <div class="teams-ambient" aria-hidden="true"><span class="orb orb--mint-sm"></span></div>
     <div class="shell">
+
       <div class="section-head">
         <div class="section-head-copy">
-          <p class="eyebrow">TEAM STATUS</p>
-          <h2 class="section-title section-title--light" id="teams-title">팀 현황</h2>
-          <p class="section-desc section-desc--light">
-            팀별 산출물 제출 상태와 배포 URL을 한 화면에서 확인한다. 값은 js/data.js 에서 수정한다.
+          <p class="eyebrow reveal">TEAM STATUS</p>
+          <h2 class="section-title section-title--light reveal" data-reveal-delay="60" id="teams-title">팀 현황</h2>
+          <p class="section-desc section-desc--light reveal" data-reveal-delay="120">
+            분반별 팀 구성과 산출물 제출 상태를 확인한다. 팀이 늘어나면 js/data.js 의 TEAMS 배열에 행만 추가한다.
           </p>
+        </div>
+
+        <div class="chips chips--light reveal" data-reveal-delay="120" role="group" aria-label="분반 필터">
+          <button type="button" class="chip is-active" data-class="all">전체</button>
+          <button type="button" class="chip" data-class="A">A반</button>
+          <button type="button" class="chip" data-class="B">B반</button>
+          <button type="button" class="chip" data-class="C">C반</button>
         </div>
       </div>
 
       <div class="team-grid" id="teamGrid">
-        <!-- js/data.js 의 teams 배열을 기준으로 렌더링된다 -->
+        <!-- js/data.js 의 TEAMS 배열을 기준으로 렌더링된다 -->
       </div>
+
+      <p class="empty-state empty-state--light" id="teamEmpty" hidden>
+        선택한 분반에 등록된 팀이 없다. 다른 분반을 선택한다.
+      </p>
+
+      <div class="teams-cta">
+        <a class="btn btn-mint" id="teamStatusCta" href="#" target="_blank" rel="noopener">
+          팀 현황 전체 보기 <span class="btn-arrow" aria-hidden="true">→</span>
+        </a>
+        <p class="teams-cta-note">제출 원본과 상세 산출물은 팀 현황 보드에서 확인한다</p>
+      </div>
+
     </div>
   </section>
 
@@ -201,7 +234,7 @@
   <div class="shell footer-inner">
     <p class="footer-title">생성형 AI 활용 · Course Lab</p>
     <p class="footer-meta">2026학년도 2학기 · 강의교안 웹뷰 · 문의는 강의 공지 채널에서 받는다</p>
-    <a class="footer-top" href="#top">맨 위로 ↑</a>
+    <a class="footer-top" href="#top">맨 위로 <span class="btn-arrow btn-arrow--up" aria-hidden="true">↑</span></a>
   </div>
 </footer>
 
