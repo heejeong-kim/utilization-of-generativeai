@@ -115,6 +115,8 @@
   gap: 24px;
   margin-bottom: 24px;
 }
+/* 2개 필드를 좌우 절반씩 꽉 채우는 행 (프로젝트 URL · 산출물 URL) */
+.field-row--half { grid-template-columns: 1fr 1fr; }
 .field-row + .field { margin-bottom: 8px; }
 
 /* 분반 라디오 칩 */
