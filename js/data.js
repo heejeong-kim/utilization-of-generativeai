@@ -16,6 +16,16 @@
 
 const WEEKS = [
   {
+    no: 0, week: 'OT', type: 'class', badge: '오리엔테이션',
+    title: '오리엔테이션 · 강의 소개',
+    summary: [
+      '수업 운영 방식과 성적 평가 기준을 안내하고, 생성형 AI 활용 수업의 목표와 학습 방식을 소개한다',
+      '주교재와 평가 비율, 아이디어→기획→PRD→프로토타입→MVP로 이어지는 팀프로젝트 전체 흐름을 확인한다'
+    ],
+    tags: ['오리엔테이션', '성적 평가', '팀프로젝트'],
+    thumb: 'ot.png', link: 'pages/lecture-ot.html'
+  },
+  {
     no: 1, week: 'WEEK 01', type: 'class', badge: '수업',
     title: '오리엔테이션 및 생성형 AI 개요',
     summary: [
