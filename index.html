@@ -36,7 +36,7 @@
 
     <nav class="header-nav" aria-label="주요 메뉴">
       <a class="nav-link" href="#weekly">주차별 강의교안</a>
-      <a class="nav-link nav-link--cta" href="#teams">팀 현황</a>
+      <a class="nav-link nav-link--cta" href="pages/team-project.html">팀 현황</a>
     </nav>
   </div>
   <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
@@ -72,7 +72,7 @@
           <a class="btn btn-primary" href="#weekly">
             주차별 교안 보기 <span class="btn-arrow btn-arrow--down" aria-hidden="true">↓</span>
           </a>
-          <a class="btn btn-ghost" href="#teams">
+          <a class="btn btn-ghost" href="pages/team-project.html">
             팀 현황 바로가기 <span class="btn-arrow" aria-hidden="true">→</span>
           </a>
         </div>
@@ -197,7 +197,7 @@
           <p class="eyebrow reveal">TEAM STATUS</p>
           <h2 class="section-title section-title--light reveal" data-reveal-delay="60" id="teams-title">팀 현황</h2>
           <p class="section-desc section-desc--light reveal" data-reveal-delay="120">
-            분반별 팀 구성과 산출물 제출 상태를 확인한다. 팀이 늘어나면 js/data.js 의 TEAMS 배열에 행만 추가한다.
+            분반별 팀 구성과 산출물 제출 상태를 요약해 보여준다. 등록과 수정은 팀 현황 페이지에서 한다.
           </p>
         </div>
 
@@ -214,14 +214,14 @@
       </div>
 
       <p class="empty-state empty-state--light" id="teamEmpty" hidden>
-        선택한 분반에 등록된 팀이 없다. 다른 분반을 선택한다.
+        선택한 분반에 등록된 팀이 없다. 팀 현황 페이지에서 팀을 등록한다.
       </p>
 
       <div class="teams-cta">
-        <a class="btn btn-mint" id="teamStatusCta" href="#" target="_blank" rel="noopener">
-          팀 현황 전체 보기 <span class="btn-arrow" aria-hidden="true">→</span>
+        <a class="btn btn-mint" id="teamStatusCta" href="pages/team-project.html">
+          팀 등록 · 전체 현황 보기 <span class="btn-arrow" aria-hidden="true">→</span>
         </a>
-        <p class="teams-cta-note">제출 원본과 상세 산출물은 팀 현황 보드에서 확인한다</p>
+        <p class="teams-cta-note">팀 등록, 수정, 주차별 산출물 노션 URL 관리는 팀 현황 페이지에서 한다</p>
       </div>
 
     </div>
@@ -238,6 +238,7 @@
   </div>
 </footer>
 
+<script src="js/config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/main.js"></script>
 </body>
