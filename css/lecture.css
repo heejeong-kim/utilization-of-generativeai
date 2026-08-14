@@ -63,6 +63,9 @@
   font-size: var(--fs-xs);
   font-weight: 500;
 }
+.week-select optgroup { font-weight: 700; color: var(--ink-900); }
+.week-select option { font-weight: 500; color: var(--ink-900); }
+.week-select option:disabled { color: var(--ink-300); }   /* 준비중(비활성) 회색·선택 불가 */
 
 .side-toc { margin-top: 28px; }
 .side-thumb {
@@ -387,13 +390,13 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
 }
 .lc-list--plain li::before { content: '–'; position: absolute; left: 0; color: var(--violet-500); }
 
-/* 다음 차시 예고 */
+/* 다음 차시 예고 — 다른 콜아웃과 구분되는 다크 배너 */
 .lc-preview {
   margin-top: 42px;
-  padding: 18px 22px;
+  padding: 20px 24px;
   border-radius: var(--radius-md);
-  background: var(--violet-050);
-  color: var(--ink-700);
+  background: linear-gradient(100deg, var(--violet-900), var(--violet-800));
+  color: #fff;
   line-height: 1.7;
 }
-.lc-preview strong { color: var(--violet-600); }
+.lc-preview strong { color: var(--mint-300); }
