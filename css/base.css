@@ -1,0 +1,151 @@
+/* ==========================================================================
+   base.css — 디자인 토큰, 리셋, 타이포그래피
+   기준 해상도 1520px / 기본 폰트 사이즈 18px
+   ========================================================================== */
+
+:root {
+  /* ---- 컬러: 보라(주조) + 민트(강조) ---- */
+  --violet-950: #14102A;   /* 최심층 배경 */
+  --violet-900: #1C1540;   /* 헤더 / 히어로 배경 */
+  --violet-800: #2A1F5E;   /* 패널 배경 */
+  --violet-600: #6C4CF1;   /* 주요 액션 */
+  --violet-500: #8168FF;   /* 호버 / 그라디언트 */
+  --violet-200: #CFC4FF;   /* 밝은 보조 */
+  --violet-050: #F2EFFF;   /* 배경 틴트 */
+
+  --mint-600: #12B694;     /* 민트 텍스트용 진한 톤 */
+  --mint-500: #23D6AE;     /* 민트 강조 */
+  --mint-300: #7DEFD3;     /* 민트 라이트 */
+  --mint-050: #E6FBF5;     /* 민트 틴트 */
+
+  --ink-900: #16132A;      /* 본문 최진함 */
+  --ink-700: #3B3556;      /* 본문 */
+  --ink-500: #6B6485;      /* 보조 텍스트 */
+  --ink-300: #A7A1BC;      /* 비활성 */
+
+  --paper: #FFFFFF;
+  --paper-tint: #F7F5FD;   /* 섹션 배경 */
+  --line: #E6E2F2;         /* 구분선 */
+  --line-dark: rgba(255,255,255,.14);
+
+  /* ---- 타이포 ---- */
+  --font-body: 'IBM Plex Sans KR', system-ui, -apple-system, 'Malgun Gothic', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --fs-xs: 13.5px;         /* 지정 위치에만 사용하는 소형 사이즈 */
+  --fs-base: 18px;         /* 기본 */
+  --fs-md: 20px;
+  --fs-lg: 24px;
+  --fs-xl: 30px;
+  --fs-2xl: 42px;
+  --fs-3xl: 68px;
+
+  /* ---- 레이아웃 ---- */
+  --shell-max: 1520px;
+  --shell-pad: 60px;
+  --grid-gap: 28px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+
+  /* ---- 그림자 ---- */
+  --shadow-card: 0 2px 4px rgba(28, 21, 64, .04), 0 18px 40px rgba(28, 21, 64, .07);
+  --shadow-card-hover: 0 6px 12px rgba(28, 21, 64, .07), 0 28px 56px rgba(28, 21, 64, .14);
+
+  /* ---- 모션 ---- */
+  --ease: cubic-bezier(.22, .8, .3, 1);
+}
+
+/* ---- 리셋 ---- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink-700);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  font-weight: 400;
+  line-height: 1.72;
+  letter-spacing: -.01em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, p, ol, ul, figure { margin: 0; }
+ol, ul { padding: 0; list-style: none; }
+img { display: block; max-width: 100%; }
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color .2s var(--ease);
+}
+
+button, input {
+  font: inherit;
+  color: inherit;
+}
+
+button { cursor: pointer; border: 0; background: none; }
+
+/* ---- 타이포 유틸 ---- */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--mint-300);
+  margin-bottom: 20px;
+}
+
+.eyebrow--dark { color: var(--violet-600); }
+
+.grad {
+  background: linear-gradient(96deg, var(--mint-300) 0%, var(--violet-200) 52%, var(--violet-500) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---- 접근성 ---- */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 16px; top: -60px;
+  z-index: 200;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--violet-600);
+  color: #fff;
+  font-size: var(--fs-xs);
+  transition: top .2s var(--ease);
+}
+.skip-link:focus { top: 16px; }
+
+:focus-visible {
+  outline: 3px solid var(--mint-500);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ---- 모션 최소화 설정 존중 ---- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}
