@@ -336,6 +336,28 @@
 }
 .card-cta--soon:hover { background: var(--paper-tint); color: var(--ink-300); }
 
+/* ---------- 모바일 주차 카드: 썸네일 소형 · 주차/커리큘럼명/CTA만 노출 ---------- */
+@media (max-width: 560px) {
+  .card { flex-direction: row; align-items: stretch; }
+  .card::before { display: none; }              /* 상단 유형 인디케이터 숨김 */
+
+  .card-thumb {
+    flex: 0 0 72px;                              /* 썸네일 아주 작게(72px 정사각) */
+    width: 72px;
+    align-self: flex-start;
+    aspect-ratio: 1 / 1;
+    margin: 14px 0 14px 14px;
+  }
+
+  .card-body { padding: 14px 16px; }
+  .card-meta { margin-bottom: 6px; }
+  .badge { display: none; }                      /* 유형 배지 숨김 */
+  .card-summary { display: none; }               /* 요약 숨김 */
+  .tags { display: none; }                       /* 태그 숨김 */
+  .card-cta,
+  .card-cta--soon { padding: 11px 14px; }
+}
+
 /* ---------- 팀 카드 ---------- */
 .team-card {
   padding: 24px 24px 22px;
