@@ -24,8 +24,7 @@ const SHEET_NAME = 'teams';
 const HEADERS = [
   'id', 'cls', 'teamName', 'idea',
   'm1id', 'm1name', 'm2id', 'm2name', 'm3id', 'm3name',
-  'projectUrl',
-  'w1','w2','w3','w4','w5','w6','w7','w8','w9','w10','w11','w12','w13','w14','w15',
+  'projectUrl', 'outputUrl',
   'updatedAt'
 ];
 

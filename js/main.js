@@ -25,7 +25,6 @@
   // 공용 설정 (config.js) — 팀 현황을 구글 시트에서 불러올 때 사용
   const APP_CONFIG    = window.APP_CONFIG || {};
   const SHEET_API_URL = APP_CONFIG.SHEET_API_URL || '';
-  const TOTAL_WEEKS   = APP_CONFIG.TOTAL_WEEKS || 15;
 
   let teams = [];   // 구글 시트에서 불러온 실제 등록 팀 목록
 
@@ -79,7 +78,6 @@
 
   /* ---------- 팀 카드 마크업 ---------- */
   function teamTemplate(team) {
-    const percent = Math.max(0, Math.min(100, Math.round((team.done / team.total) * 100)));
     const link = team.url
       ? '<a class="team-link" href="' + esc(team.url) + '" target="_blank" rel="noopener">결과물 열기 →</a>'
       : '<span class="team-link" aria-disabled="true">배포 전</span>';
@@ -89,11 +87,8 @@
         '<span class="team-class">' + esc(team.cls) + '반</span>' +
         '<h3 class="team-name">' + esc(team.name) + '</h3>' +
         '<p class="team-topic">' + esc(team.topic) + '</p>' +
-        '<div class="team-progress" role="img" aria-label="산출물 ' + team.total + '개 중 ' + team.done + '개 제출">' +
-          '<span style="width:' + percent + '%"></span>' +
-        '</div>' +
         '<div class="team-foot">' +
-          '<p class="team-count">산출물 ' + team.done + '/' + team.total + ' · 팀원 ' + team.members + '명</p>' +
+          '<p class="team-count">팀원 ' + team.members + '명</p>' +
           link +
         '</div>' +
       '</article>';
@@ -146,19 +141,11 @@
       return n && String(n).trim() !== '';
     }).length;
 
-    // 노션 URL이 입력된 주차 수 = 제출 산출물 수
-    let done = 0;
-    for (let w = 1; w <= TOTAL_WEEKS; w++) {
-      if (t['w' + w] && String(t['w' + w]).trim() !== '') done++;
-    }
-
     return {
       cls:     t.cls,
       name:    t.teamName,
       topic:   t.idea,
       members: memberCount,
-      done:    done,
-      total:   TOTAL_WEEKS,
       url:     t.projectUrl || ''
     };
   }

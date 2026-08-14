@@ -59,7 +59,7 @@
         </h1>
         <p class="hero-lead reveal" data-reveal-delay="160">
           A·B·C반 팀 구성과 프로젝트 아이디어를 등록하고,<br>
-          1주차부터 15주차까지 팀별 산출물 진행 현황을 한 화면에서 관리한다.
+          프로젝트 결과물과 산출물 링크, 팀별 현황을 한 화면에서 관리한다.
         </p>
         <div class="hero-actions reveal" data-reveal-delay="240">
           <a class="btn btn-primary" href="#register">
@@ -93,8 +93,8 @@
         <p class="stat-val">결과물 링크 1개 등록</p>
       </div>
       <div class="stat reveal" data-reveal-delay="180">
-        <p class="stat-key">1–15주</p>
-        <p class="stat-val">주차별 산출물 노션 URL 등록</p>
+        <p class="stat-key">산출물 URL</p>
+        <p class="stat-val">노션 산출물 링크 1개 등록</p>
       </div>
     </div>
   </section>
@@ -139,9 +139,16 @@
           </div>
         </div>
 
-        <div class="field">
-          <label class="field-label" for="projectUrl">프로젝트 URL</label>
-          <input type="url" id="projectUrl" placeholder="https:// 로 시작하는 결과물 주소 (미정 시 비워둠)" autocomplete="off">
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label" for="projectUrl">프로젝트 URL</label>
+            <input type="url" id="projectUrl" placeholder="https:// 로 시작하는 결과물 주소 (미정 시 비워둠)" autocomplete="off">
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="outputUrl">주차별 산출물 URL (노션)</label>
+            <input type="url" id="outputUrl" placeholder="https:// 로 시작하는 노션 산출물 주소 (미정 시 비워둠)" autocomplete="off">
+          </div>
         </div>
 
         <!-- 참여 팀원 -->
@@ -179,18 +186,6 @@
           </div>
         </div>
 
-        <!-- 주차별 산출물 URL -->
-        <details class="subsection subsection--fold" id="weekFold">
-          <summary>
-            <span class="subsection-title">주차별 산출물 URL (노션)</span>
-            <span class="pill pill--count" id="weekFilled">0 / 15 등록</span>
-          </summary>
-          <p class="subsection-desc">해당 주차의 노션 산출물 페이지 주소를 입력한다. 입력한 주차는 목록에서 링크로 표시된다.</p>
-          <div class="week-grid" id="weekInputs">
-            <!-- js/team.js 가 1~15주 입력칸을 생성한다 -->
-          </div>
-        </details>
-
         <div class="form-actions">
           <button type="button" class="btn btn-line" id="resetBtn">입력 초기화</button>
           <button type="button" class="btn btn-primary" id="submitBtn">
@@ -212,7 +207,7 @@
           <p class="eyebrow reveal">REGISTERED TEAMS</p>
           <h2 class="section-title section-title--light reveal" data-reveal-delay="60" id="board-title">등록된 팀프로젝트</h2>
           <p class="section-desc section-desc--light reveal" data-reveal-delay="120">
-            팀명을 선택하면 등록 정보를 불러와 수정할 수 있다. 주차 칩을 누르면 해당 산출물 노션 페이지가 열린다.
+            팀명을 선택하면 등록 정보를 불러와 수정할 수 있다. 프로젝트 · 산출물 URL의 열기 버튼으로 해당 페이지를 연다.
           </p>
         </div>
 
@@ -227,18 +222,15 @@
         <table class="team-table">
           <thead>
             <tr>
-              <th scope="col" rowspan="2" class="col-no">번호</th>
-              <th scope="col" rowspan="2" class="col-cls">분반</th>
-              <th scope="col" rowspan="2" class="col-name">팀명<span class="th-sub">선택 시 수정</span></th>
-              <th scope="col" rowspan="2" class="col-idea">아이디어</th>
-              <th scope="col" rowspan="2">참여팀원 1<span class="th-sub">학번 / 이름</span></th>
-              <th scope="col" rowspan="2">참여팀원 2<span class="th-sub">학번 / 이름</span></th>
-              <th scope="col" rowspan="2">참여팀원 3<span class="th-sub">학번 / 이름</span></th>
-              <th scope="col" rowspan="2" class="col-url">프로젝트 URL</th>
-              <th scope="col" colspan="15" class="col-weeks">주차별 산출물 URL (노션)</th>
-            </tr>
-            <tr id="weekHeadRow">
-              <!-- js/team.js 가 1주~15주 헤더를 생성한다 -->
+              <th scope="col" class="col-no">번호</th>
+              <th scope="col" class="col-cls">분반</th>
+              <th scope="col" class="col-name">팀명<span class="th-sub">선택 시 수정</span></th>
+              <th scope="col" class="col-idea">아이디어</th>
+              <th scope="col">참여팀원 1<span class="th-sub">학번 / 이름</span></th>
+              <th scope="col">참여팀원 2<span class="th-sub">학번 / 이름</span></th>
+              <th scope="col">참여팀원 3<span class="th-sub">학번 / 이름</span></th>
+              <th scope="col" class="col-url">프로젝트 URL</th>
+              <th scope="col" class="col-url">주차별 산출물 URL</th>
             </tr>
           </thead>
           <tbody id="teamRows"></tbody>

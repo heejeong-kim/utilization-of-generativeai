@@ -4,7 +4,7 @@
    [Google Sheet 연동 방법]
    1. 구글 시트를 만들고 첫 행에 아래 순서로 헤더를 넣는다
       id | cls | teamName | idea | m1id | m1name | m2id | m2name | m3id | m3name |
-      projectUrl | w1 | w2 | w3 | w4 | w5 | w6 | w7 | w8 | w9 | w10 | w11 | w12 | w13 | w14 | w15 | updatedAt
+      projectUrl | outputUrl | updatedAt
    2. 확장 프로그램 → Apps Script 에서 doGet / doPost 를 만들어 웹 앱으로 배포한다
       - 실행 사용자: 나
       - 액세스 권한: 모든 사용자
@@ -15,7 +15,6 @@
 // 설정은 config.js(window.APP_CONFIG)에서 가져온다. 미로드 시 안전 기본값 사용.
 const CONFIG = window.APP_CONFIG || {
   SHEET_API_URL: '',
-  TOTAL_WEEKS: 15,
   CLASSES: ['A', 'B', 'C']
 };
 
@@ -25,9 +24,6 @@ const CONFIG = window.APP_CONFIG || {
   /* ---------- 요소 ---------- */
   const el = {
     notice:      document.getElementById('notice'),
-    weekInputs:  document.getElementById('weekInputs'),
-    weekFilled:  document.getElementById('weekFilled'),
-    weekHeadRow: document.getElementById('weekHeadRow'),
     rows:        document.getElementById('teamRows'),
     emptyBoard:  document.getElementById('emptyBoard'),
     submitBtn:   document.getElementById('submitBtn'),
@@ -37,7 +33,7 @@ const CONFIG = window.APP_CONFIG || {
     classTabs:   Array.from(document.querySelectorAll('[data-class]'))
   };
 
-  const FIELDS = ['teamName', 'idea', 'projectUrl', 'm1id', 'm1name', 'm2id', 'm2name', 'm3id', 'm3name'];
+  const FIELDS = ['teamName', 'idea', 'projectUrl', 'outputUrl', 'm1id', 'm1name', 'm2id', 'm2name', 'm3id', 'm3name'];
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let teams = [];            // 전체 팀 목록
@@ -63,57 +59,20 @@ const CONFIG = window.APP_CONFIG || {
 
   function clearNotice() { el.notice.hidden = true; }
 
-  /* ---------- 1~15주 입력칸과 표 헤더 생성 ---------- */
-  function buildWeekUI() {
-    let inputs = '';
-    let heads = '';
-
-    for (let w = 1; w <= CONFIG.TOTAL_WEEKS; w++) {
-      inputs +=
-        '<div class="week-field">' +
-          '<label class="week-field-label" for="w' + w + '">' + w + '주차</label>' +
-          '<input type="url" id="w' + w + '" placeholder="노션 산출물 URL" autocomplete="off">' +
-        '</div>';
-      heads += '<th scope="col" class="week-head">' + w + '주</th>';
-    }
-
-    el.weekInputs.innerHTML = inputs;
-    el.weekHeadRow.innerHTML = heads;
-
-    // 입력 개수를 실시간으로 표시한다
-    el.weekInputs.addEventListener('input', updateWeekCount);
-  }
-
-  function weekValues() {
-    const out = {};
-    for (let w = 1; w <= CONFIG.TOTAL_WEEKS; w++) {
-      out['w' + w] = val('w' + w);
-    }
-    return out;
-  }
-
-  function updateWeekCount() {
-    let filled = 0;
-    for (let w = 1; w <= CONFIG.TOTAL_WEEKS; w++) {
-      if (val('w' + w)) filled++;
-    }
-    el.weekFilled.textContent = filled + ' / ' + CONFIG.TOTAL_WEEKS + ' 등록';
-  }
-
   /* ---------- 폼 값 읽기 및 검증 ---------- */
   function readForm() {
     const clsInput = document.querySelector('input[name="cls"]:checked');
-    const data = {
+    return {
       id: editingId,
       cls: clsInput ? clsInput.value : 'A',
       teamName: val('teamName'),
       idea: val('idea'),
       projectUrl: val('projectUrl'),
+      outputUrl: val('outputUrl'),
       m1id: val('m1id'), m1name: val('m1name'),
       m2id: val('m2id'), m2name: val('m2name'),
       m3id: val('m3id'), m3name: val('m3name')
     };
-    return Object.assign(data, weekValues());
   }
 
   function validate(data) {
@@ -139,8 +98,7 @@ const CONFIG = window.APP_CONFIG || {
     }
 
     // URL 형식 검사 (입력한 항목만)
-    const urlFields = ['projectUrl'];
-    for (let w = 1; w <= CONFIG.TOTAL_WEEKS; w++) urlFields.push('w' + w);
+    const urlFields = ['projectUrl', 'outputUrl'];
 
     for (let i = 0; i < urlFields.length; i++) {
       const id = urlFields[i];
@@ -162,10 +120,6 @@ const CONFIG = window.APP_CONFIG || {
     FIELDS.forEach(function (id) {
       document.getElementById(id).value = team[id] || '';
     });
-    for (let w = 1; w <= CONFIG.TOTAL_WEEKS; w++) {
-      document.getElementById('w' + w).value = team['w' + w] || '';
-    }
-    updateWeekCount();
   }
 
   function resetForm() {
@@ -174,11 +128,9 @@ const CONFIG = window.APP_CONFIG || {
     if (first) first.checked = true;
 
     FIELDS.forEach(function (id) { document.getElementById(id).value = ''; });
-    for (let w = 1; w <= CONFIG.TOTAL_WEEKS; w++) document.getElementById('w' + w).value = '';
 
     document.querySelectorAll('.is-invalid').forEach(function (n) { n.classList.remove('is-invalid'); });
     el.submitBtn.innerHTML = '팀 등록 <span class="btn-arrow" aria-hidden="true">→</span>';
-    updateWeekCount();
     clearNotice();
   }
 
@@ -188,16 +140,10 @@ const CONFIG = window.APP_CONFIG || {
     return '<td class="cell-member"><span class="m-id">' + esc(id) + '</span>' + esc(name) + '</td>';
   }
 
-  function weekCells(team) {
-    let html = '';
-    for (let w = 1; w <= CONFIG.TOTAL_WEEKS; w++) {
-      const url = team['w' + w];
-      html += '<td class="cell-week">' + (url
-        ? '<a class="week-chip week-chip--done" href="' + esc(url) + '" target="_blank" rel="noopener" ' +
-          'title="' + w + '주차 산출물 열기">' + w + '</a>'
-        : '<span class="week-chip week-chip--empty" title="' + w + '주차 미등록">' + w + '</span>') + '</td>';
-    }
-    return html;
+  function urlCell(url) {
+    return '<td>' + (url
+      ? '<a class="url-link" href="' + esc(url) + '" target="_blank" rel="noopener">열기 →</a>'
+      : '<span class="cell-empty">미등록</span>') + '</td>';
   }
 
   function rowTemplate(team, index) {
@@ -211,10 +157,8 @@ const CONFIG = window.APP_CONFIG || {
         memberCell(team.m1id, team.m1name) +
         memberCell(team.m2id, team.m2name) +
         memberCell(team.m3id, team.m3name) +
-        '<td>' + (team.projectUrl
-          ? '<a class="url-link" href="' + esc(team.projectUrl) + '" target="_blank" rel="noopener">열기 →</a>'
-          : '<span class="cell-empty">미등록</span>') + '</td>' +
-        weekCells(team) +
+        urlCell(team.projectUrl) +
+        urlCell(team.outputUrl) +
       '</tr>';
   }
 
@@ -376,8 +320,6 @@ const CONFIG = window.APP_CONFIG || {
   }
 
   /* ---------- 초기 실행 ---------- */
-  buildWeekUI();
-  updateWeekCount();
   syncTabs();
   loadTeams();
   bindParallax();

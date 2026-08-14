@@ -294,7 +294,7 @@
 
 .team-table {
   width: 100%;
-  min-width: 1580px;
+  min-width: 900px;
   border-collapse: collapse;
   font-size: var(--fs-xs);
 }
