@@ -95,8 +95,9 @@
           <li><a href="#s2">2. 생성형 AI의 진화</a></li>
           <li><a href="#s3">3. 생성형 AI 기본 용어</a></li>
           <li><a href="#s4">4. 분야별 활용</a></li>
-          <li><a href="#s5">5. 🖇️ [실습] 대표 LLM 비교</a></li>
-          <li><a href="#s6">📝 활동내역 및 산출물</a></li>
+          <li><a href="#s5">5. 주요 생성형 AI 도구 특징 비교</a></li>
+          <li><a href="#s6">6. 🖇️ [실습] 대표 LLM 비교</a></li>
+          <li><a href="#s7">📝 활동내역 및 산출물</a></li>
         </ul>
       </nav>
     </aside>
@@ -615,8 +616,101 @@
         </div>
       </details>
 
-      <!-- ============ 5 실습(민트) ============ -->
-      <h1 class="lc-h1 lc-h1--mint" id="s5">5. 🖇️ [실습] 대표 LLM 서비스 활용</h1>
+      <!-- ============ 5 ============ -->
+      <h1 class="lc-h1" id="s5">5. 주요 생성형 AI 도구 특징 비교</h1>
+
+      <h2 class="lc-h2">5.1 3대 도구</h2>
+      <div class="lc-table-wrap">
+        <table class="lc-table">
+          <thead>
+            <tr><th>구분</th><th>Claude (앤트로픽)</th><th>ChatGPT (OpenAI)</th><th>Gemini (Google)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>개발사</td><td>Anthropic (미국)</td><td>OpenAI (미국)</td><td>Google DeepMind (미국)</td></tr>
+            <tr><td>출시</td><td>2023년</td><td>2022년 말</td><td>2023년</td></tr>
+            <tr><td>핵심 강점</td><td>긴 문서 분석·논리적 글쓰기</td><td>범용성·코드 생성·플러그인 생태계</td><td>Google 서비스 연동·실시간 검색</td></tr>
+            <tr><td>컨텍스트 창</td><td>200K (채팅) / <strong>1M (API)</strong></td><td>최대 400K 토큰(GPT-5)</td><td>최대 1M 토큰 (2.5 Pro)</td></tr>
+            <tr><td>실시간 검색</td><td>가능 (웹 검색 연동)</td><td>가능 (ChatGPT 검색)</td><td>가능 (Google 검색 네이티브)</td></tr>
+            <tr>
+              <td>무료 플랜</td>
+              <td>있음 (<a href="http://claude.ai" target="_blank" rel="noopener noreferrer">claude.ai</a>)</td>
+              <td>있음 (<a href="http://chatgpt.com" target="_blank" rel="noopener noreferrer">chatgpt.com</a>)</td>
+              <td>있음 (<a href="http://gemini.google.com" target="_blank" rel="noopener noreferrer">gemini.google.com</a>)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <hr class="lc-divider">
+
+      <h2 class="lc-h2">5.2 도구별 특징</h2>
+
+      <h3 class="lc-h3">1) Claude (앤트로픽)</h3>
+      <ul class="lc-list--plain">
+        <li>장문 문서 분석에 강함: PDF·논문·계약서·법령 등 수백 페이지 문서를 한 번에 업로드하여 핵심 내용 추출 및 요약 가능</li>
+        <li>논리적 글쓰기·구조화 능력 우수: 보고서·기획서·강의교안처럼 구조화가 필요한 문서 작성에 최적화</li>
+        <li>안전성·윤리 기준 강조: Constitutional AI 방식으로 신뢰할 수 있는 응답 설계</li>
+      </ul>
+      <h4 class="lc-h4">활용 예시</h4>
+      <ul class="lc-list--plain">
+        <li>반도체 공정 센서 데이터 분석 보고서 자동 작성</li>
+        <li>수십 페이지의 연구 논문 핵심 요약 및 비교 분석</li>
+        <li>데이터 전처리 코드 생성 및 오류 원인 설명</li>
+      </ul>
+
+      <hr class="lc-divider">
+
+      <h3 class="lc-h3">2) ChatGPT (OpenAI)</h3>
+      <ul class="lc-list--plain">
+        <li>가장 광범위한 생태계: 수천 개의 GPT(Custom AI) 앱 및 플러그인 연동 가능</li>
+        <li>코드 생성 및 실행 능력 우수: Code Interpreter로 업로드한 CSV·Excel 파일을 직접 분석</li>
+        <li>이미지 생성 연동: GPT Image 1 통합으로 텍스트 기반 이미지 즉시 생성 가능 (구 DALL-E 3는 2025년 3월 대체됨)</li>
+      </ul>
+      <h4 class="lc-h4">활용 예시</h4>
+      <ul class="lc-list--plain">
+        <li>업로드한 센서 데이터 CSV를 직접 분석하여 시각화 차트 생성</li>
+        <li>Python/SQL 코드 자동 생성 및 디버깅</li>
+        <li>커스텀 GPT를 활용한 특정 업무 자동화</li>
+      </ul>
+
+      <hr class="lc-divider">
+
+      <h3 class="lc-h3">3) Gemini (Google)</h3>
+      <ul class="lc-list--plain">
+        <li>Google 서비스와 네이티브 연동: Gmail·Google Docs·Sheets·Meet 등과 직접 연결</li>
+        <li>실시간 검색 최강: Google 검색 엔진과 직접 연동되어 최신 정보 접근성이 가장 높음</li>
+        <li>NotebookLM 연동: 업로드한 문서·영상·강의 자료를 AI 기반으로 학습하고 질의응답 가능</li>
+      </ul>
+      <h4 class="lc-h4">활용 예시</h4>
+      <ul class="lc-list--plain">
+        <li>Google Sheets에서 실험 데이터를 Gemini로 분석하여 인사이트 도출</li>
+        <li>최신 학술 논문·규제 정보를 실시간 검색하여 보고서 작성</li>
+        <li>NotebookLM으로 연구 자료 학습 후 Q&amp;A 세션 활용</li>
+      </ul>
+
+      <hr class="lc-divider">
+
+      <h2 class="lc-h2">5.3 업무 목적별 도구 가이드</h2>
+      <p class="lc-note">2026년 현재 생성형 AI 도구는 하나의 만능 도구를 고르는 시대가 아니라, 텍스트·이미지·영상·음향·코딩·도메인 분석별로 가장 강한 도구를 조합해서 쓰는 시대로 이동했으므로 본인에게 가장 적합한 도구를 찾는것이 중요</p>
+      <h4 class="lc-h4">🧲 3대장 업무 상황별 추천</h4>
+      <div class="lc-table-wrap">
+        <table class="lc-table">
+          <thead><tr><th>업무 상황</th><th>추천 도구</th><th>이유</th></tr></thead>
+          <tbody>
+            <tr><td>긴 PDF·논문·법령 분석</td><td>Claude</td><td>최대 200K~1M 토큰의 긴 컨텍스트 처리</td></tr>
+            <tr><td>보고서·기획서 논리적 작성</td><td>Claude</td><td>구조화 글쓰기 능력 우수</td></tr>
+            <tr><td>데이터 파일(CSV/Excel) 직접 분석</td><td>ChatGPT</td><td>Code Interpreter로 파일 업로드 후 즉시 분석</td></tr>
+            <tr><td>Python·SQL 코드 생성·디버깅</td><td>ChatGPT / Claude</td><td>둘 다 강함, 목적에 따라 선택</td></tr>
+            <tr><td>최신 정보·실시간 뉴스 검색</td><td>Gemini</td><td>Google 검색 네이티브 연동</td></tr>
+            <tr><td>Google Docs·Sheets 연동 자동화</td><td>Gemini</td><td>Google Workspace 직접 통합</td></tr>
+            <tr><td>이미지 생성이 필요한 작업</td><td>ChatGPT</td><td>GPT Image 1 통합 (구 DALL-E 3는 2025년 3월 대체됨)</td></tr>
+            <tr><td>강의 자료·논문 학습 후 Q&amp;A</td><td>Gemini (NotebookLM)</td><td>문서 학습 기반 대화 최적화</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ============ 6 실습(민트) ============ -->
+      <h1 class="lc-h1 lc-h1--mint" id="s6">6. 🖇️ [실습] 대표 LLM 서비스 활용</h1>
       <figure class="lc-banner"><img src="../assets/img/1_5.png" alt="[실습] 대표 LLM 서비스 활용 대표 이미지" loading="lazy" onerror="this.parentElement.style.display='none'"></figure>
       <h2 class="lc-h2">ChatGPT·Claude·Gemini 비교</h2>
       <p class="lc-p">ChatGPT·Claude·Gemini는 모두 질문 응답, 글쓰기, 요약, 파일 분석, 아이디어 발상, 코딩과 같은 범용 작업을 수행할 수 있는 대표적인 생성형 AI 서비스로 멀티모달 가능하며 어느 하나가 항상 더 좋다고 보기보다 작업의 성격과 사용 환경에 따라 선택하는 것이 중요</p>
@@ -637,8 +731,8 @@
         <div class="lc-callout-body"><p>세 서비스의 기능은 계속 서로 비슷해지고 있으므로 작업 목적에 따라 도구를 선택하고 결과를 비교·검증하는 습관이 중요하므로 같은 작업을 2개 이상의 서비스에 요청해 결과의 차이를 비교하는 것도 좋은 활용 방법</p></div>
       </div>
 
-      <!-- ============ 6 ============ -->
-      <h1 class="lc-h1" id="s6">📝 활동내역 및 산출물</h1>
+      <!-- ============ 활동내역 및 산출물 ============ -->
+      <h1 class="lc-h1" id="s7">📝 활동내역 및 산출물</h1>
       <p class="lc-p">1주차 별도 산출물은 없습니다. 주차별 활동내역 및 산출물은 교안 하단에 공지하겠습니다.</p>
       <div class="lc-callout lc-callout--gray">
         <span class="lc-callout-icon" aria-hidden="true">📦</span>
