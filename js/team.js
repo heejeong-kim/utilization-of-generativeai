@@ -168,7 +168,7 @@ const CONFIG = window.APP_CONFIG || {
     el.rows.innerHTML = list.map(rowTemplate).join('');
     el.emptyBoard.hidden = list.length !== 0;
     el.emptyBoard.querySelector('.empty-board-title').textContent =
-      activeClass + '반에 아직 등록된 팀이 없다';
+      '아직 등록된 팀이 없습니다.';
 
     // 팀명 클릭 시 폼으로 불러온다
     el.rows.querySelectorAll('[data-edit]').forEach(function (btn) {
