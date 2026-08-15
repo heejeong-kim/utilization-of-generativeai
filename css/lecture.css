@@ -36,13 +36,36 @@
 .lecture-layout {
   display: grid;
   grid-template-columns: 272px minmax(0, 1fr);
-  gap: 48px;
-  padding-block: 44px 80px;
+  column-gap: 48px;
+  row-gap: 18px;
+  padding-block: 28px 80px;
   align-items: start;
 }
+.lecture-layout.is-side-closed { grid-template-columns: minmax(0, 1fr); }
+
+/* 좌측 영역 전체 열기·닫기 */
+.lecture-side-toggle {
+  grid-column: 1 / -1;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  color: var(--violet-600);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+.lecture-side-toggle:hover { background: var(--violet-050); border-color: var(--violet-200); }
+.lecture-side-toggle:focus-visible { outline: 2px solid var(--violet-500); outline-offset: 2px; }
 
 /* 좌측 사이드바 */
 .lecture-side { position: sticky; top: 96px; align-self: start; }
+.lecture-layout.is-side-closed .lecture-side { display: none; }
+.lecture-layout.is-side-closed .lecture-content { grid-column: 1 / -1; }
 
 .side-label {
   font-family: var(--font-mono);
@@ -67,48 +90,7 @@
 .week-select option { font-weight: 500; color: var(--ink-900); }
 .week-select option:disabled { color: var(--ink-300); }   /* 준비중(비활성) 회색·선택 불가 */
 
-.side-toc {
-  margin-top: 28px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--paper);
-  overflow: hidden;
-}
-.side-toc-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
-  color: var(--ink-700);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  list-style: none;
-  user-select: none;
-}
-.side-toc-toggle::-webkit-details-marker { display: none; }
-.side-toc-toggle::after {
-  content: '목차 닫기  −';
-  color: var(--violet-600);
-  font-family: var(--font-sans);
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  letter-spacing: 0;
-}
-.side-toc:not([open]) .side-toc-toggle::after { content: '목차 열기  +'; }
-.side-toc-toggle:hover { background: var(--violet-050); }
-.side-toc-toggle:focus-visible {
-  outline: 2px solid var(--violet-500);
-  outline-offset: -2px;
-}
-.side-toc-panel {
-  padding: 0 12px 12px;
-  border-top: 1px solid var(--line);
-}
+.side-toc { margin-top: 28px; }
 .side-thumb {
   aspect-ratio: 16 / 10;
   border-radius: var(--radius-sm);
@@ -299,7 +281,7 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
 
 /* ---------- 반응형 ---------- */
 @media (max-width: 980px) {
-  .lecture-layout { grid-template-columns: 1fr; gap: 26px; }
+  .lecture-layout { grid-template-columns: 1fr; column-gap: 0; row-gap: 18px; }
   .lecture-side { position: static; top: auto; }
   .side-toc { margin-top: 18px; }
 }
