@@ -49,10 +49,14 @@
     </div>
   </section>
 
-  <div class="shell lecture-layout">
+  <div class="shell lecture-layout" id="lectureLayout">
+
+    <button type="button" class="lecture-side-toggle" id="lectureSideToggle" aria-controls="lectureSide" aria-expanded="true">
+      <span aria-hidden="true">◀</span> 왼쪽 영역 닫기
+    </button>
 
     <!-- ===== 좌측 사이드바 ===== -->
-    <aside class="lecture-side">
+    <aside class="lecture-side" id="lectureSide">
       <div class="side-select">
         <p class="side-label">주차 선택</p>
         <label class="sr-only" for="weekSelect">주차 이동</label>
@@ -80,10 +84,8 @@
         </select>
       </div>
 
-      <details class="side-toc" open>
-        <summary class="side-toc-toggle">Contents</summary>
-        <div class="side-toc-panel">
-
+      <nav class="side-toc" aria-label="목차">
+        <p class="side-label">Contents</p>
         <figure class="side-thumb">
           <img src="../assets/img/1.png" alt="1주차 대표 이미지" loading="lazy">
         </figure>
@@ -96,8 +98,7 @@
           <li><a href="#s5">5. 🖇️ [실습] 대표 LLM 비교</a></li>
           <li><a href="#s6">📝 활동내역 및 산출물</a></li>
         </ul>
-        </div>
-      </details>
+      </nav>
     </aside>
 
     <!-- ===== 본문 (Notion 1주차 100% 반영) ===== -->
@@ -692,6 +693,30 @@
 
 <script>
   (function () {
+    /* 왼쪽 영역 전체 열기·닫기 */
+    var layout = document.getElementById('lectureLayout');
+    var sideToggle = document.getElementById('lectureSideToggle');
+    var sideStorageKey = 'lecture-side-closed';
+
+    function setSideClosed(closed) {
+      if (!layout || !sideToggle) return;
+      layout.classList.toggle('is-side-closed', closed);
+      sideToggle.setAttribute('aria-expanded', String(!closed));
+      sideToggle.innerHTML = closed
+        ? '<span aria-hidden="true">▶</span> 왼쪽 영역 열기'
+        : '<span aria-hidden="true">◀</span> 왼쪽 영역 닫기';
+    }
+
+    var savedClosed = false;
+    try { savedClosed = localStorage.getItem(sideStorageKey) === 'true'; } catch (e) {}
+    setSideClosed(savedClosed);
+
+    if (sideToggle) sideToggle.addEventListener('click', function () {
+      var closed = !layout.classList.contains('is-side-closed');
+      setSideClosed(closed);
+      try { localStorage.setItem(sideStorageKey, String(closed)); } catch (e) {}
+    });
+
     var sel = document.getElementById('weekSelect');
     if (sel) sel.addEventListener('change', function () {
       if (this.value) window.location.href = this.value;
