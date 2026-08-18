@@ -5,6 +5,12 @@
 (function () {
   'use strict';
 
+  /* 공개된 강의 페이지가 data.js의 준비중 상태보다 먼저 배포된 경우 링크를 보정한다. */
+  if (typeof WEEKS !== 'undefined' && Array.isArray(WEEKS)) {
+    var week02 = WEEKS.find(function (item) { return item.no === 2; });
+    if (week02) week02.link = 'pages/lecture-week02.html';
+  }
+
   const grid          = document.getElementById('cardGrid');
   const teamGrid      = document.getElementById('teamGrid');
   const searchInput   = document.getElementById('searchInput');
@@ -22,20 +28,17 @@
   let currentClass   = 'all';
   let currentKeyword = '';
 
-  // 공용 설정 (config.js) — 팀 현황을 구글 시트에서 불러올 때 사용
   const APP_CONFIG    = window.APP_CONFIG || {};
   const SHEET_API_URL = APP_CONFIG.SHEET_API_URL || '';
 
-  let teams = [];   // 구글 시트에서 불러온 실제 등록 팀 목록
+  let teams = [];
 
-  /* ---------- HTML 이스케이프 ---------- */
   function esc(str) {
     return String(str).replace(/[&<>"']/g, function (ch) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
     });
   }
 
-  /* ---------- 주차 카드 마크업 ---------- */
   function cardTemplate(item) {
     const typeClass = item.type === 'eval' ? ' card--eval'
                     : item.type === 'demo' ? ' card--demo' : '';
@@ -52,20 +55,17 @@
 
     const link = item.link ? esc(item.link) : '';
 
-    // 링크가 비어 있으면 준비 중 상태로 표기한다
     const cta = item.link
       ? '<a class="card-cta" href="' + link + '">강의교안 보기 ' +
         '<span class="btn-arrow" aria-hidden="true">→</span></a>'
       : '<span class="card-cta card-cta--soon">준비 중</span>';
 
-    // 썸네일: 링크가 있으면 상세로 이동
     const img = '<img src="assets/img/' + esc(item.thumb) + '" alt="" loading="lazy" ' +
                 'onerror="this.style.display=\'none\'">';
     const thumb = item.link
       ? '<a class="card-thumb" href="' + link + '" aria-label="' + esc(item.title) + ' 강의교안 보기">' + img + '</a>'
       : '<div class="card-thumb">' + img + '</div>';
 
-    // 제목: 링크가 있으면 상세로 이동
     const title = item.link
       ? '<h3 class="card-title"><a href="' + link + '">' + esc(item.title) + '</a></h3>'
       : '<h3 class="card-title">' + esc(item.title) + '</h3>';
@@ -86,7 +86,6 @@
       '</article>';
   }
 
-  /* ---------- 팀 카드 마크업 ---------- */
   function teamTemplate(team) {
     const link = team.url
       ? '<a class="team-link" href="' + esc(team.url) + '" target="_blank" rel="noopener">결과물 열기 →</a>'
@@ -104,7 +103,6 @@
       '</article>';
   }
 
-  /* ---------- 등장 모션 옵서버 ---------- */
   const revealObserver = ('IntersectionObserver' in window && !reduceMotion)
     ? new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
@@ -123,7 +121,6 @@
     else el.classList.add('is-in');
   }
 
-  /* ---------- 주차 목록 렌더링 ---------- */
   function renderWeeks() {
     const keyword = currentKeyword.trim().toLowerCase();
 
@@ -144,9 +141,7 @@
     });
   }
 
-  /* ---------- 시트 레코드 → 카드용 팀 객체 변환 ---------- */
   function mapSheetTeam(t) {
-    // 이름이 채워진 팀원 수 (팀원 1·2 필수, 3 선택)
     const memberCount = [t.m1name, t.m2name, t.m3name].filter(function (n) {
       return n && String(n).trim() !== '';
     }).length;
@@ -160,7 +155,6 @@
     };
   }
 
-  /* ---------- 구글 시트에서 실제 등록 팀 불러오기 ---------- */
   function loadTeamsFromSheet() {
     if (!SHEET_API_URL) { renderTeams(); return; }
 
@@ -179,7 +173,6 @@
       });
   }
 
-  /* ---------- 팀 목록 렌더링 ---------- */
   function renderTeams() {
     const list = teams.filter(function (t) {
       return currentClass === 'all' || t.cls === currentClass;
@@ -193,7 +186,6 @@
     });
   }
 
-  /* ---------- 필터 이벤트 ---------- */
   typeChips.forEach(function (chip) {
     chip.addEventListener('click', function () {
       typeChips.forEach(function (c) { c.classList.remove('is-active'); });
@@ -222,26 +214,23 @@
     }, 140);
   });
 
-  /* ---------- 팀 현황 CTA 주소 연결 ---------- */
   const cta = document.getElementById('teamStatusCta');
   if (cta && typeof TEAM_STATUS_URL === 'string' && TEAM_STATUS_URL) {
     cta.href = TEAM_STATUS_URL;
   }
 
-  /* ---------- 스크롤 진행 표시줄 ---------- */
   function updateProgress() {
     const max = document.documentElement.scrollHeight - window.innerHeight;
     const ratio = max > 0 ? window.scrollY / max : 0;
     progressBar.style.transform = 'scaleX(' + ratio.toFixed(4) + ')';
   }
 
-  /* ---------- 히어로 마우스 패럴랙스 ---------- */
   function bindParallax() {
     if (!heroParallax || reduceMotion) return;
 
     heroParallax.parentElement.addEventListener('mousemove', function (e) {
       const rect = heroParallax.getBoundingClientRect();
-      const cx = (e.clientX - rect.left) / rect.width - .5;   // -0.5 ~ 0.5
+      const cx = (e.clientX - rect.left) / rect.width - .5;
       const cy = (e.clientY - rect.top) / rect.height - .5;
 
       const copy = heroParallax.querySelector('.hero-copy');
@@ -264,7 +253,6 @@
     });
   }
 
-  /* ---------- 학기 흐름 단계 순환 (스크롤과 무관하게 상시 동작) ---------- */
   function cycleFlow() {
     if (!flowItems.length || reduceMotion) return;
     let index = 0;
@@ -280,16 +268,13 @@
     setInterval(tick, 2600);
   }
 
-  /* ---------- 초기 실행 ---------- */
   renderWeeks();
   loadTeamsFromSheet();
   bindParallax();
   cycleFlow();
 
-  // 정적 요소 등장 처리
   document.querySelectorAll('.reveal').forEach(function (el) { observe(el); });
 
-  // 히어로 영역은 첫 화면이므로 로드 직후 순차 등장시킨다
   window.requestAnimationFrame(function () {
     document.querySelectorAll('.hero .reveal').forEach(function (el) {
       const delay = Number(el.dataset.revealDelay || 0);
