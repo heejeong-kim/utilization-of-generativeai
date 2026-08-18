@@ -29,7 +29,37 @@
     });
   }
 
+  /* 2주차 상세 페이지에는 1주차의 인라인 토글 스크립트가 없으므로 공통 스크립트에서 보완한다. */
+  function enableLectureSideToggle() {
+    var layout = document.getElementById('lectureLayout');
+    var sideToggle = document.getElementById('lectureSideToggle');
+
+    /* 기존 OT·1주차는 자체 스크립트를 사용하므로 중복 이벤트를 등록하지 않는다. */
+    if (!layout || !sideToggle || document.getElementById('lectureToast')) return;
+
+    var storageKey = 'lecture-side-closed';
+
+    function setClosed(closed) {
+      layout.classList.toggle('is-side-closed', closed);
+      sideToggle.setAttribute('aria-expanded', String(!closed));
+      sideToggle.innerHTML = closed
+        ? '<span aria-hidden="true">▶</span> 왼쪽 영역 열기'
+        : '<span aria-hidden="true">◀</span> 왼쪽 영역 닫기';
+    }
+
+    var savedClosed = false;
+    try { savedClosed = localStorage.getItem(storageKey) === 'true'; } catch (e) {}
+    setClosed(savedClosed);
+
+    sideToggle.addEventListener('click', function () {
+      var nextClosed = !layout.classList.contains('is-side-closed');
+      setClosed(nextClosed);
+      try { localStorage.setItem(storageKey, String(nextClosed)); } catch (e) {}
+    });
+  }
+
   enableWeek02Navigation();
+  enableLectureSideToggle();
 
   const btn = document.getElementById('backTop');
   if (!btn) return;
