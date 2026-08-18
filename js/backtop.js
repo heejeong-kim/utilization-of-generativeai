@@ -245,6 +245,16 @@
         var list = heading.nextElementSibling;
         if (list && list.classList.contains('lc-list')) list.classList.add('lc-list--bullet');
       }
+      if (heading.textContent.trim().indexOf('3.3 표준 7단계 사용 흐름') === 0) {
+        var tableWrap = heading.nextElementSibling;
+        if (tableWrap && tableWrap.classList.contains('lc-p')) tableWrap = tableWrap.nextElementSibling;
+        var table = tableWrap && tableWrap.querySelector ? tableWrap.querySelector('.lc-table') : null;
+        if (table) {
+          Array.prototype.forEach.call(table.querySelectorAll('tbody tr td:first-child'), function (cell) {
+            cell.textContent = cell.textContent.replace(/^([1-7])\.?\s+/, '$1. ');
+          });
+        }
+      }
     });
 
     var outputs = document.getElementById('outputs');
