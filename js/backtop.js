@@ -58,8 +58,34 @@
     });
   }
 
+  /* 2주차 5·6장 H1 배너 이미지도 1~4장과 동일한 패턴으로 맞춘다. */
+  function ensureWeek02SectionBanners() {
+    if (!document.querySelector('.lecture-eyebrow strong') || document.querySelector('.lecture-eyebrow strong').textContent.indexOf('WEEK 02') === -1) return;
+
+    [
+      { id: 's5', src: '../assets/img/2_5.png', alt: '환각·편향·최신성 한계와 사실 검증' },
+      { id: 's6', src: '../assets/img/2_6.png', alt: '이론을 적용한 프롬프트 작성·비교·검증' }
+    ].forEach(function (item) {
+      var heading = document.getElementById(item.id);
+      if (!heading) return;
+      var next = heading.nextElementSibling;
+      if (next && next.classList.contains('lc-banner')) return;
+
+      var figure = document.createElement('figure');
+      figure.className = 'lc-banner';
+      var img = document.createElement('img');
+      img.src = item.src;
+      img.alt = item.alt;
+      img.loading = 'lazy';
+      img.addEventListener('error', function () { figure.style.display = 'none'; });
+      figure.appendChild(img);
+      heading.insertAdjacentElement('afterend', figure);
+    });
+  }
+
   enableWeek02Navigation();
   enableLectureSideToggle();
+  ensureWeek02SectionBanners();
 
   const btn = document.getElementById('backTop');
   if (!btn) return;
