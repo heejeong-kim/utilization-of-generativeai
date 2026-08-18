@@ -189,6 +189,16 @@ button { cursor: pointer; border: 0; background: none; }
   font-weight: 700;
 }
 
+/* [참고] 교안 안내는 예외적으로 전체 13.5px 사용 */
+.lecture-content #notice,
+.lecture-content #notice p,
+.lecture-content #notice strong,
+.lecture-content #notice .lc-list li,
+.lecture-content #notice .lc-list--plain li,
+.lecture-content #notice .lc-sub {
+  font-size: var(--fs-xs) !important;
+}
+
 /* 토글 안 제목형 H3/H4도 본문 18px보다 한 단계 이상 크게 유지 */
 .lecture-content .lc-details-body .lc-h3 { font-size: var(--lecture-h3) !important; }
 .lecture-content .lc-details-body .lc-h4 { font-size: var(--lecture-h4) !important; }
