@@ -11,7 +11,144 @@
     return !!week && week.textContent.indexOf('WEEK 02') !== -1;
   }
 
-  /* 2주차 공개 상태를 기존 OT·1주차 페이지의 정적 목록과 다음 버튼에 반영한다. */
+  function injectWeek02Styles() {
+    if (!isWeek02() || document.getElementById('week02PolishStyles')) return;
+    var style = document.createElement('style');
+    style.id = 'week02PolishStyles';
+    style.textContent = `
+      .week02-page .lecture-content { line-height: 1.78; }
+      .week02-page .lc-p { line-height: 1.82; }
+      .week02-page .lc-p + .lc-p { margin-top: 12px; }
+      .week02-page .lc-h3 + .lc-p,
+      .week02-page .lc-h2 + .lc-p { margin-top: 14px; }
+      .week02-page .lc-callout-body > p + p,
+      .week02-page .lc-note > p + p { margin-top: 12px; }
+
+      .week02-page .lc-table { table-layout: fixed; min-width: 0; }
+      .week02-page .lc-table col { width: auto !important; }
+      .week02-page .lc-table th,
+      .week02-page .lc-table td { word-break: keep-all; overflow-wrap: break-word; }
+      .week02-page .lc-table--cols-2 th:nth-child(1),
+      .week02-page .lc-table--cols-2 td:nth-child(1) { width: 32%; }
+      .week02-page .lc-table--cols-2 th:nth-child(2),
+      .week02-page .lc-table--cols-2 td:nth-child(2) { width: 68%; }
+      .week02-page .lc-table--question th:nth-child(1),
+      .week02-page .lc-table--question td:nth-child(1) { width: 58%; }
+      .week02-page .lc-table--question th:nth-child(2),
+      .week02-page .lc-table--question td:nth-child(2) { width: 42%; }
+      .week02-page .lc-table--label-content th:nth-child(1),
+      .week02-page .lc-table--label-content td:nth-child(1) { width: 18%; }
+      .week02-page .lc-table--label-content th:nth-child(2),
+      .week02-page .lc-table--label-content td:nth-child(2) { width: 82%; }
+      .week02-page .lc-table--cols-3 th:nth-child(1),
+      .week02-page .lc-table--cols-3 td:nth-child(1) { width: 22%; }
+      .week02-page .lc-table--cols-3 th:nth-child(2),
+      .week02-page .lc-table--cols-3 td:nth-child(2) { width: 39%; }
+      .week02-page .lc-table--cols-3 th:nth-child(3),
+      .week02-page .lc-table--cols-3 td:nth-child(3) { width: 39%; }
+      .week02-page .lc-table--cols-4 th:nth-child(1),
+      .week02-page .lc-table--cols-4 td:nth-child(1) { width: 20%; }
+      .week02-page .lc-table--cols-4 th:nth-child(2),
+      .week02-page .lc-table--cols-4 td:nth-child(2) { width: 24%; }
+      .week02-page .lc-table--cols-4 th:nth-child(3),
+      .week02-page .lc-table--cols-4 td:nth-child(3) { width: 24%; }
+      .week02-page .lc-table--cols-4 th:nth-child(4),
+      .week02-page .lc-table--cols-4 td:nth-child(4) { width: 32%; }
+      .week02-page .lc-table--compare th,
+      .week02-page .lc-table--compare td { width: 25% !important; }
+      .week02-page .lc-table--prompt-elements th:nth-child(1),
+      .week02-page .lc-table--prompt-elements td:nth-child(1) { width: 18% !important; }
+      .week02-page .lc-table--prompt-elements th:nth-child(2),
+      .week02-page .lc-table--prompt-elements td:nth-child(2) { width: 22% !important; }
+      .week02-page .lc-table--prompt-elements th:nth-child(3),
+      .week02-page .lc-table--prompt-elements td:nth-child(3) { width: 29% !important; }
+      .week02-page .lc-table--prompt-elements th:nth-child(4),
+      .week02-page .lc-table--prompt-elements td:nth-child(4) { width: 31% !important; }
+      .week02-page .lc-table--model-context th:nth-child(1),
+      .week02-page .lc-table--model-context td:nth-child(1) { width: 19% !important; }
+      .week02-page .lc-table--model-context th:nth-child(2),
+      .week02-page .lc-table--model-context td:nth-child(2) { width: 22% !important; }
+      .week02-page .lc-table--model-context th:nth-child(3),
+      .week02-page .lc-table--model-context td:nth-child(3) { width: 19% !important; }
+      .week02-page .lc-table--model-context th:nth-child(4),
+      .week02-page .lc-table--model-context td:nth-child(4) { width: 40% !important; }
+
+      .week02-page .lc-list--bullet li::before,
+      .week02-page .lc-bullet-lead::before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        color: var(--violet-600);
+        font-weight: 700;
+      }
+      .week02-page .lc-list--bullet li { padding-left: 18px; }
+      .week02-page .lc-bullet-lead {
+        position: relative;
+        padding-left: 18px;
+        margin-top: 16px;
+      }
+
+      .week02-page .lc-code-shell {
+        position: relative;
+        margin-top: 16px;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #111318;
+        border: 1px solid #252936;
+        box-shadow: 0 10px 28px rgba(20, 16, 42, .12);
+      }
+      .week02-page .lc-code-shell pre {
+        margin: 0;
+        padding: 48px 22px 22px;
+        border: 0;
+        border-radius: 0;
+        background: #111318;
+        color: #F4F6FB;
+        font-size: 15px;
+        line-height: 1.8;
+      }
+      .week02-page .lc-code-shell pre code { color: inherit; }
+      .week02-page .lc-copy-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+        padding: 7px 11px;
+        border: 1px solid #3A4050;
+        border-radius: 7px;
+        background: #1D212B;
+        color: #DDE2ED;
+        font-family: var(--font-body);
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .week02-page .lc-copy-btn:hover { background: #2A3040; color: #fff; }
+      .week02-page .lc-copy-btn.is-copied { border-color: #48D8B5; color: #7DEFD3; }
+
+      .week02-page .lc-output-title { color: var(--ink-900); }
+      .week02-page .lc-output-intro { color: var(--ink-700); }
+      .week02-page .lc-output-callout {
+        background: var(--paper-tint);
+        border-color: var(--line);
+      }
+      .week02-page .lc-output-callout .lc-callout-body p:first-child,
+      .week02-page .lc-output-callout .lc-callout-body p:first-child strong {
+        color: #445ED6 !important;
+      }
+      .week02-page .lc-output-callout .lc-callout-body p:not(:first-child),
+      .week02-page .lc-output-callout .lc-callout-body p:not(:first-child) strong {
+        color: var(--ink-500) !important;
+      }
+
+      @media (max-width: 760px) {
+        .week02-page .lc-table { min-width: 680px; }
+        .week02-page .lc-code-shell pre { padding-inline: 18px; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   function enableWeek02Navigation() {
     var weekSelect = document.getElementById('weekSelect');
     if (weekSelect) {
@@ -34,15 +171,12 @@
     });
   }
 
-  /* 2주차 상세 페이지에는 1주차의 인라인 토글 스크립트가 없으므로 공통 스크립트에서 보완한다. */
   function enableLectureSideToggle() {
     var layout = document.getElementById('lectureLayout');
     var sideToggle = document.getElementById('lectureSideToggle');
-
     if (!layout || !sideToggle || document.getElementById('lectureToast')) return;
 
     var storageKey = 'lecture-side-closed';
-
     function setClosed(closed) {
       layout.classList.toggle('is-side-closed', closed);
       sideToggle.setAttribute('aria-expanded', String(!closed));
@@ -62,10 +196,8 @@
     });
   }
 
-  /* 2주차 5·6장 H1 배너 이미지도 1~4장과 동일한 패턴으로 맞춘다. */
   function ensureWeek02SectionBanners() {
     if (!isWeek02()) return;
-
     [
       { id: 's5', src: '../assets/img/2_5.png', alt: '환각·편향·최신성 한계와 사실 검증' },
       { id: 's6', src: '../assets/img/2_6.png', alt: '이론을 적용한 프롬프트 작성·비교·검증' }
@@ -87,7 +219,6 @@
     });
   }
 
-  /* 2주차 전용 화면 보정: 테이블 비율, 블릿, 서술문, 산출물 색상 */
   function polishWeek02Content() {
     if (!isWeek02()) return;
     document.body.classList.add('week02-page');
@@ -97,11 +228,7 @@
       if (!headRow) return;
       var count = headRow.children.length;
       table.classList.add('lc-table--cols-' + count);
-
-      var labels = Array.prototype.map.call(headRow.children, function (cell) {
-        return cell.textContent.trim();
-      }).join('|');
-
+      var labels = Array.prototype.map.call(headRow.children, function (cell) { return cell.textContent.trim(); }).join('|');
       if (labels.indexOf('ChatGPT|Claude|Gemini') !== -1) table.classList.add('lc-table--compare');
       if (labels.indexOf('요소|답해야 할 질문|작성 예시|빠뜨렸을 때의 증상') !== -1) table.classList.add('lc-table--prompt-elements');
       if (labels.indexOf('서비스|최신 모델 예시|컨텍스트 규모|학생 관점에서의 의미') !== -1) table.classList.add('lc-table--model-context');
@@ -109,13 +236,10 @@
       if (labels.indexOf('고민해볼 문제') !== -1) table.classList.add('lc-table--question');
     });
 
-    /* 5.3의 서술형 한 문장을 항목형 정보로 표시 */
     Array.prototype.forEach.call(document.querySelectorAll('.lecture-content .lc-h2'), function (heading) {
       if (heading.textContent.trim().indexOf('5.3 최신성 한계') === 0) {
         var p = heading.nextElementSibling;
-        if (p && p.classList.contains('lc-p') && !p.classList.contains('lc-bullet-lead')) {
-          p.classList.add('lc-bullet-lead');
-        }
+        if (p && p.classList.contains('lc-p')) p.classList.add('lc-bullet-lead');
       }
       if (heading.textContent.trim().indexOf('4.2 요소별 작성 요령') === 0) {
         var list = heading.nextElementSibling;
@@ -133,13 +257,10 @@
     }
   }
 
-  /* 학생용 프롬프트는 검정 배경 + 복사 버튼으로 제공 */
   function enablePromptCopyBlocks() {
     if (!isWeek02()) return;
-
-    Array.prototype.forEach.call(document.querySelectorAll('.lecture-content pre'), function (pre, index) {
+    Array.prototype.forEach.call(document.querySelectorAll('.lecture-content pre'), function (pre) {
       if (pre.closest('.lc-code-shell')) return;
-
       var shell = document.createElement('div');
       shell.className = 'lc-code-shell';
       pre.parentNode.insertBefore(shell, pre);
@@ -163,7 +284,6 @@
             button.classList.remove('is-copied');
           }, 1400);
         };
-
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text, done); });
         } else {
@@ -187,22 +307,15 @@
   enableWeek02Navigation();
   enableLectureSideToggle();
   ensureWeek02SectionBanners();
+  injectWeek02Styles();
   polishWeek02Content();
   enablePromptCopyBlocks();
 
   const btn = document.getElementById('backTop');
   if (!btn) return;
-
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function toggle() {
-    btn.classList.toggle('is-visible', window.scrollY > 320);
-  }
-
-  btn.addEventListener('click', function () {
-    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
-  });
-
+  function toggle() { btn.classList.toggle('is-visible', window.scrollY > 320); }
+  btn.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' }); });
   window.addEventListener('scroll', toggle, { passive: true });
   window.addEventListener('resize', toggle);
   toggle();
