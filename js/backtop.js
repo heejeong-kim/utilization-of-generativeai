@@ -6,14 +6,16 @@
 (function () {
   'use strict';
 
-  /* 2주차 교안이 공개된 뒤 기존 OT·1주차 페이지의 정적 '준비중' 표기를 보정한다. */
+  /* 2주차 공개 상태를 기존 OT·1주차 페이지의 정적 목록과 다음 버튼에 반영한다. */
   function enableWeek02Navigation() {
     var weekSelect = document.getElementById('weekSelect');
     if (weekSelect) {
+      var openGroup = weekSelect.querySelector('optgroup[label="개설 강의"]');
       Array.prototype.forEach.call(weekSelect.options, function (option) {
         if (option.textContent.indexOf('02주차 · LLM의 원리와 기본 질문법') !== -1) {
           option.disabled = false;
           option.value = 'lecture-week02.html';
+          if (openGroup && option.parentElement !== openGroup) openGroup.appendChild(option);
         }
       });
     }
