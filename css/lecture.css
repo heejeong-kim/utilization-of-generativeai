@@ -88,7 +88,7 @@
 }
 .week-select optgroup { font-weight: 700; color: var(--ink-900); }
 .week-select option { font-weight: 500; color: var(--ink-900); }
-.week-select option:disabled { color: var(--ink-300); }   /* 준비중(비활성) 회색·선택 불가 */
+.week-select option:disabled { color: var(--ink-300); }
 
 .side-toc { margin-top: 28px; }
 .side-thumb {
@@ -137,10 +137,11 @@
   color: var(--ink-900);
 }
 .lc-h3 {
-  margin-top: 36px;
-  font-size: var(--fs-lg);
+  margin-top: 30px;
+  font-size: var(--fs-md);
   font-weight: 700;
   color: var(--ink-900);
+  word-break: keep-all;
 }
 .lc-p { margin-top: 16px; color: var(--ink-700); }
 .lc-p--tight { margin-top: 8px; }
@@ -166,7 +167,7 @@
 .lc-table th,
 .lc-table td {
   padding: 13px 16px;
-  border: 1px solid var(--line);      /* 모든 셀 4면 테두리 → 외곽·내부선 전부 표시 */
+  border: 1px solid var(--line);
   text-align: left;
   vertical-align: top;
   line-height: 1.65;
@@ -211,7 +212,6 @@
 }
 .lc-sub { display: block; color: var(--ink-500); }
 
-/* 하단 '교안 안내'만 예외: 13.5px · 회색 처리 */
 #notice p,
 #notice .lc-list li,
 #notice .lc-sub,
@@ -274,7 +274,7 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
   font-size: var(--fs-xs);
   box-shadow: var(--shadow-card-hover);
   opacity: 0;
-  pointer-events: none;                 /* opacity 0 상태에서 클릭 방해 없음 */
+  pointer-events: none;
   transition: opacity .25s ease, transform .25s ease;
 }
 .lecture-toast.is-show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -297,7 +297,6 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
    주차 상세 확장 요소 (대단원 H1 · H4 · 번호목록 · 접기 · 콜아웃 색상 등)
    ========================================================================== */
 
-/* H1 대단원 배너 */
 .lc-h1 {
   margin-top: 58px;
   padding: 20px 24px;
@@ -311,10 +310,8 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
   word-break: keep-all;
 }
 .lecture-content > .lc-h1:first-child { margin-top: 0; }
-/* 실습 대단원: 민트 컬러 */
 .lc-h1--mint { background: linear-gradient(100deg, var(--mint-600), #0E9E82); }
 
-/* H1 하단 배너 이미지 */
 .lc-banner {
   margin-top: 18px;
   border: 1px solid var(--line);
@@ -324,7 +321,6 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
 }
 .lc-banner img { width: 100%; }
 
-/* H4 소제목 */
 .lc-h4 {
   margin-top: 30px;
   font-size: var(--fs-md);
@@ -333,7 +329,6 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
   word-break: keep-all;
 }
 
-/* 번호 목록(학습 목표 등) */
 .lc-num { margin-top: 16px; counter-reset: lcnum; }
 .lc-num li {
   position: relative;
@@ -359,7 +354,6 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
   font-weight: 700;
 }
 
-/* 회색 예시/주석 인용 */
 .lc-note {
   margin-top: 14px;
   padding: 12px 18px;
@@ -370,11 +364,9 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
   line-height: 1.7;
 }
 
-/* 콜아웃 색상 변형 */
 .lc-callout--green { background: var(--mint-050); border-color: #BCEADD; }
 .lc-callout--blue { background: #EEF1FE; border-color: #D6DDFB; }
 
-/* 접기 [참고] */
 .lc-details {
   margin-top: 22px;
   border: 1px solid var(--line);
@@ -398,12 +390,13 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
 .lc-details-body .lc-h4:first-child,
 .lc-details-body h3:first-child { margin-top: 0; }
 
-/* 표 안의 링크 */
 .lc-table a { color: var(--violet-600); text-decoration: underline; }
 .lc-table a:hover { color: var(--violet-500); }
 
-/* 일반 목록(대시) */
+/* 일반 목록 — 1주차와 동일한 대시 패턴 */
+.lc-list,
 .lc-list--plain { margin-top: 12px; }
+.lc-list li,
 .lc-list--plain li {
   position: relative;
   padding-left: 16px;
@@ -411,9 +404,43 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
   color: var(--ink-700);
   line-height: 1.7;
 }
-.lc-list--plain li::before { content: '–'; position: absolute; left: 0; color: var(--violet-500); }
+.lc-list li::before,
+.lc-list--plain li::before {
+  content: '–';
+  position: absolute;
+  left: 0;
+  color: var(--violet-500);
+}
+.lc-list .lc-list { margin: 6px 0 0 14px; }
 
-/* 다음 차시 예고 — 다른 콜아웃과 구분되는 다크 배너 */
+/* Notion 코드블록 — 강의교안 디자인 토큰에 맞춘 공통 패턴 */
+.lecture-content pre {
+  margin: 16px 0 0;
+  padding: 18px 20px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper-tint);
+  color: var(--ink-700);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.lecture-content pre code {
+  font: inherit;
+  color: inherit;
+}
+.lecture-content :not(pre) > code {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: var(--violet-050);
+  color: var(--violet-600);
+  font-family: var(--font-mono);
+  font-size: .9em;
+}
+
 .lc-preview {
   margin-top: 42px;
   padding: 20px 24px;
