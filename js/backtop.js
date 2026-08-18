@@ -6,6 +6,29 @@
 (function () {
   'use strict';
 
+  /* 2주차 교안이 공개된 뒤 기존 OT·1주차 페이지의 정적 '준비중' 표기를 보정한다. */
+  function enableWeek02Navigation() {
+    var weekSelect = document.getElementById('weekSelect');
+    if (weekSelect) {
+      Array.prototype.forEach.call(weekSelect.options, function (option) {
+        if (option.textContent.indexOf('02주차 · LLM의 원리와 기본 질문법') !== -1) {
+          option.disabled = false;
+          option.value = 'lecture-week02.html';
+        }
+      });
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll('.lecture-nav-item--next'), function (item) {
+      var name = item.querySelector('.nav-name');
+      if (name && name.textContent.indexOf('WEEK 02') !== -1 && !item.getAttribute('data-href')) {
+        item.setAttribute('data-href', 'lecture-week02.html');
+        item.classList.remove('is-disabled');
+      }
+    });
+  }
+
+  enableWeek02Navigation();
+
   const btn = document.getElementById('backTop');
   if (!btn) return;
 
