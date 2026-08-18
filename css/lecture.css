@@ -1,4 +1,4 @@
-/* ==========================================================================
+/* ========================================================================== 
    lecture.css — 강의교안 상세(웹뷰) 페이지 전용
    header · footer · 버튼 · back-top 은 base/layout/components 를 재사용한다
    ========================================================================== */
@@ -117,7 +117,26 @@
 }
 
 /* ---------- 본문 ---------- */
-.lecture-content { min-width: 0; }
+.lecture-content {
+  min-width: 0;
+  font-size: var(--fs-base);
+}
+
+/* 본문 기본 텍스트는 18px로 명시적으로 통일 */
+.lecture-content .lc-p,
+.lecture-content .lc-intro,
+.lecture-content .lc-note,
+.lecture-content .lc-list li,
+.lecture-content .lc-list--plain li,
+.lecture-content .lc-num li,
+.lecture-content .lc-table,
+.lecture-content .lc-callout p,
+.lecture-content .lc-callout .lc-list li,
+.lecture-content .lc-details-body,
+.lecture-content .lc-details-body p,
+.lecture-content .lc-details-body li {
+  font-size: var(--fs-base);
+}
 
 .lc-intro {
   padding: 20px 24px;
