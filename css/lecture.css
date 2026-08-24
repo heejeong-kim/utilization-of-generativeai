@@ -198,6 +198,14 @@
   font-weight: 600;
 }
 .lc-table td:first-child { font-weight: 600; color: var(--ink-900); }
+.lc-table--curriculum { table-layout: fixed; }
+.lc-table--curriculum .lc-col-week { width: 14%; }
+.lc-table--curriculum .lc-col-topic { width: 34%; }
+.lc-table--curriculum .lc-col-detail { width: 52%; }
+.lc-table--curriculum td:nth-child(1),
+.lc-table--curriculum td:nth-child(2),
+.lc-table--curriculum th:nth-child(1),
+.lc-table--curriculum th:nth-child(2) { white-space: nowrap; }
 
 /* 콜아웃 */
 .lc-callout {
