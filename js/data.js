@@ -53,7 +53,7 @@ const WEEKS = [
       '검색·파일·확장 기능 활용법을 익힌다'
     ],
     tags: ['플랫폼 비교', 'GPTs', 'Gems'],
-    thumb: '3.png', link: ''
+    thumb: '3.png', link: 'pages/lecture-week03.html'
   },
   {
     no: 4, week: 'WEEK 04', type: 'class', badge: '수업',

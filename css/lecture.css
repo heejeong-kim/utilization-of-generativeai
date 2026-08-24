@@ -357,14 +357,14 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
 }
 
 .lc-num { margin-top: 16px; counter-reset: lcnum; }
-.lc-num li {
+.lc-num > li {
   position: relative;
   padding-left: 34px;
   margin-top: 10px;
   color: var(--ink-700);
   line-height: 1.7;
 }
-.lc-num li::before {
+.lc-num > li::before {
   counter-increment: lcnum;
   content: counter(lcnum);
   position: absolute;
@@ -467,6 +467,87 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
   font-family: var(--font-mono);
   font-size: .9em;
 }
+
+/* 표 너비 고정 — 줄바꿈 없이 한 줄로 표시하고 필요 시 가로 스크롤 */
+.lc-table--fixed { table-layout: fixed; }
+
+/* 실습 프롬프트 코드블록 — 어두운 배경 + 복사 버튼 */
+.lc-code-block { position: relative; margin-top: 16px; }
+.lc-code-block .lc-pre-dark {
+  margin: 0;
+  padding: 20px 88px 20px 20px;
+  overflow-x: auto;
+  border: 1px solid #2a2a30;
+  border-radius: var(--radius-md);
+  background: #1b1b1f;
+  color: #f2f2f4;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.lc-code-block .lc-pre-dark code { font: inherit; color: inherit; }
+.lc-copy-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 14px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  color: #f2f2f4;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.lc-copy-btn:hover { background: rgba(255,255,255,.18); }
+.lc-copy-btn.is-copied { background: var(--mint-600); border-color: var(--mint-600); color: #08211b; }
+
+/* 비밀번호 잠금 콘텐츠 — 개별 페이지를 iframe으로 불러오기 전 게이트 */
+.lc-lock {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper-tint);
+  overflow: hidden;
+}
+.lc-lock-gate { padding: 40px 24px; text-align: center; }
+.lc-lock-icon { font-size: 30px; line-height: 1; }
+.lc-lock-title { margin-top: 12px; font-size: var(--fs-lg); font-weight: 700; color: var(--ink-900); }
+.lc-lock-desc { margin-top: 6px; color: var(--ink-500); font-size: var(--fs-base); }
+.lc-lock-form { display: flex; gap: 10px; justify-content: center; align-items: center; margin-top: 20px; flex-wrap: wrap; }
+.lc-lock-input {
+  width: 200px;
+  max-width: 60vw;
+  padding: 11px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  font-size: var(--fs-base);
+  font-family: var(--font-mono);
+  text-align: center;
+  letter-spacing: 3px;
+}
+.lc-lock-input:focus { outline: 2px solid var(--violet-500); outline-offset: 2px; }
+.lc-lock-btn {
+  padding: 11px 24px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--violet-600);
+  color: #fff;
+  font-weight: 700;
+  font-size: var(--fs-base);
+  cursor: pointer;
+  transition: background .15s ease;
+}
+.lc-lock-btn:hover { background: var(--violet-500); }
+.lc-lock-error { margin-top: 12px; color: #D6455B; font-size: var(--fs-xs); }
+.lc-lock-frame { display: block; width: 100%; border: 0; background: var(--paper); }
+.lc-lock.is-unlocked .lc-lock-gate { display: none; }
 
 .lc-preview {
   margin-top: 42px;
