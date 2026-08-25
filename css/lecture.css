@@ -175,7 +175,14 @@
 .lc-figure img { width: 100%; }
 
 /* 표 */
-.lc-table-wrap { margin-top: 20px; overflow-x: auto; }
+.lc-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 20px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
 .lc-table {
   width: 100%;
   min-width: 520px;
@@ -318,6 +325,71 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
   .lecture-title { font-size: var(--fs-xl); }
   .lc-h2 { margin-top: 38px; font-size: var(--fs-lg); }
   .lc-h1 { padding: 16px 18px; font-size: var(--fs-lg); }
+
+  /* OT의 정보 표는 좁은 화면에서 가로 스크롤 대신 읽기 쉬운 행 카드로 전환한다. */
+  .lc-table--mobile-cards {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    table-layout: auto;
+  }
+  .lc-table--mobile-cards colgroup { display: none; }
+  .lc-table--mobile-cards thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .lc-table--mobile-cards tbody,
+  .lc-table--mobile-cards tr,
+  .lc-table--mobile-cards td { display: block; width: 100%; }
+  .lc-table--mobile-cards tbody {
+    display: grid;
+    gap: 14px;
+  }
+  .lc-table--mobile-cards tr {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+  }
+  .lc-table--mobile-cards td,
+  .lc-table--curriculum.lc-table--mobile-cards td {
+    display: grid;
+    grid-template-columns: minmax(78px, 30%) minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px 14px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .lc-table--mobile-cards td:last-child { border-bottom: 0; }
+  .lc-table--mobile-cards td::before {
+    content: attr(data-label);
+    color: var(--ink-500);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    line-height: 1.65;
+  }
+  .lc-table--textbook td:nth-child(1)::before { content: '도서명'; }
+  .lc-table--textbook td:nth-child(2)::before { content: '저자'; }
+  .lc-table--textbook td:nth-child(3)::before { content: '출판사'; }
+  .lc-table--grading td:nth-child(1)::before { content: '평가 항목'; }
+  .lc-table--grading td:nth-child(2)::before { content: '배점'; }
+  .lc-table--grading td:nth-child(3)::before { content: '평가 내용'; }
+  .lc-table--curriculum td:nth-child(1)::before { content: '주차'; }
+  .lc-table--curriculum td:nth-child(2)::before { content: '커리큘럼'; }
+  .lc-table--curriculum td:nth-child(3)::before { content: '상세 내용'; }
+  .lc-table--project td:nth-child(1)::before { content: '단계'; }
+  .lc-table--project td:nth-child(2)::before { content: '주차'; }
+  .lc-table--project td:nth-child(3)::before { content: '팀 산출물'; }
 }
 
 /* ==========================================================================
