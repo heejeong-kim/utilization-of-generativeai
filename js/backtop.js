@@ -11,6 +11,36 @@
     return !!week && week.textContent.indexOf('WEEK 02') !== -1;
   }
 
+  function fallbackCopy(text, done) {
+    var area = document.createElement('textarea');
+    area.value = text;
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    try { document.execCommand('copy'); done(); } catch (e) {}
+    document.body.removeChild(area);
+  }
+
+  function bindCopyButton(button, getText) {
+    button.addEventListener('click', function () {
+      var text = getText();
+      var done = function () {
+        button.textContent = '복사됨';
+        button.classList.add('is-copied');
+        window.setTimeout(function () {
+          button.textContent = '복사';
+          button.classList.remove('is-copied');
+        }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text, done); });
+      } else {
+        fallbackCopy(text, done);
+      }
+    });
+  }
+
   function injectWeek02Styles() {
     if (!isWeek02() || document.getElementById('week02PolishStyles')) return;
     var style = document.createElement('style');
@@ -75,75 +105,59 @@
 
       .week02-page .lc-list--bullet li::before,
       .week02-page .lc-bullet-lead::before {
-        content: '•';
-        position: absolute;
-        left: 0;
-        color: var(--violet-600);
-        font-weight: 700;
+        content: '•'; position: absolute; left: 0; color: var(--violet-600); font-weight: 700;
       }
       .week02-page .lc-list--bullet li { padding-left: 18px; }
-      .week02-page .lc-bullet-lead {
-        position: relative;
-        padding-left: 18px;
-        margin-top: 16px;
-      }
+      .week02-page .lc-bullet-lead { position: relative; padding-left: 18px; margin-top: 16px; }
 
       .week02-page .lc-code-shell {
-        position: relative;
-        margin-top: 16px;
-        border-radius: 14px;
-        overflow: hidden;
-        background: #111318;
-        border: 1px solid #252936;
-        box-shadow: 0 10px 28px rgba(20, 16, 42, .12);
+        position: relative; margin-top: 16px; border-radius: 14px; overflow: hidden;
+        background: #111318; border: 1px solid #252936; box-shadow: 0 10px 28px rgba(20,16,42,.12);
       }
       .week02-page .lc-code-shell pre {
-        margin: 0;
-        padding: 48px 22px 22px;
-        border: 0;
-        border-radius: 0;
-        background: #111318;
-        color: #F4F6FB;
-        font-size: 15px;
-        line-height: 1.8;
+        margin: 0; padding: 48px 22px 22px; border: 0; border-radius: 0;
+        background: #111318; color: #F4F6FB; font-size: 15px; line-height: 1.8;
       }
       .week02-page .lc-code-shell pre code { color: inherit; }
       .week02-page .lc-copy-btn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        z-index: 2;
-        padding: 7px 11px;
-        border: 1px solid #3A4050;
-        border-radius: 7px;
-        background: #1D212B;
-        color: #DDE2ED;
-        font-family: var(--font-body);
-        font-size: 12.5px;
-        font-weight: 600;
-        cursor: pointer;
+        position: absolute; top: 10px; right: 10px; z-index: 2; padding: 7px 11px;
+        border: 1px solid #3A4050; border-radius: 7px; background: #1D212B; color: #DDE2ED;
+        font-family: var(--font-body); font-size: 12.5px; font-weight: 600; cursor: pointer;
       }
       .week02-page .lc-copy-btn:hover { background: #2A3040; color: #fff; }
       .week02-page .lc-copy-btn.is-copied { border-color: #48D8B5; color: #7DEFD3; }
 
       .week02-page .lc-output-title { color: var(--ink-900); }
       .week02-page .lc-output-intro { color: var(--ink-700); }
-      .week02-page .lc-output-callout {
-        background: var(--paper-tint);
-        border-color: var(--line);
-      }
+      .week02-page .lc-output-callout { background: var(--paper-tint); border-color: var(--line); }
       .week02-page .lc-output-callout .lc-callout-body p:first-child,
-      .week02-page .lc-output-callout .lc-callout-body p:first-child strong {
-        color: #445ED6 !important;
-      }
+      .week02-page .lc-output-callout .lc-callout-body p:first-child strong { color: #445ED6 !important; }
       .week02-page .lc-output-callout .lc-callout-body p:not(:first-child),
-      .week02-page .lc-output-callout .lc-callout-body p:not(:first-child) strong {
-        color: var(--ink-500) !important;
+      .week02-page .lc-output-callout .lc-callout-body p:not(:first-child) strong { color: var(--ink-500) !important; }
+
+      .week02-page .lc-pdf-prompt-details { margin-top: 12px; }
+      .week02-page .lc-pdf-prompt-intro { margin: 0 0 12px; color: var(--ink-700); }
+      .week02-page .lc-pdf-prompt-label { margin: 0 0 8px; font-weight: 700; color: #445ED6; }
+      .week02-page .lc-pdf-prompt-box {
+        position: relative; margin-top: 8px; border-radius: 14px; overflow: hidden;
+        background: #111318; border: 1px solid #252936; box-shadow: 0 10px 28px rgba(20,16,42,.12);
       }
+      .week02-page .lc-pdf-prompt-text {
+        margin: 0; padding: 50px 22px 22px; white-space: pre-wrap; word-break: break-word;
+        color: #F4F6FB; font-family: var(--font-mono, monospace); font-size: 14px; line-height: 1.75;
+      }
+      .week02-page .lc-pdf-prompt-copy {
+        position: absolute; top: 10px; right: 10px; z-index: 2; padding: 7px 11px;
+        border: 1px solid #3A4050; border-radius: 7px; background: #1D212B; color: #DDE2ED;
+        font-family: var(--font-body); font-size: 12.5px; font-weight: 600; cursor: pointer;
+      }
+      .week02-page .lc-pdf-prompt-copy:hover { background: #2A3040; color: #fff; }
+      .week02-page .lc-pdf-prompt-copy.is-copied { border-color: #48D8B5; color: #7DEFD3; }
 
       @media (max-width: 760px) {
         .week02-page .lc-table { min-width: 680px; }
         .week02-page .lc-code-shell pre { padding-inline: 18px; }
+        .week02-page .lc-pdf-prompt-text { padding-inline: 18px; font-size: 13px; }
       }
     `;
     document.head.appendChild(style);
@@ -161,7 +175,6 @@
         }
       });
     }
-
     Array.prototype.forEach.call(document.querySelectorAll('.lecture-nav-item--next'), function (item) {
       var name = item.querySelector('.nav-name');
       if (name && name.textContent.indexOf('WEEK 02') !== -1 && !item.getAttribute('data-href')) {
@@ -175,7 +188,6 @@
     var layout = document.getElementById('lectureLayout');
     var sideToggle = document.getElementById('lectureSideToggle');
     if (!layout || !sideToggle || document.getElementById('lectureToast')) return;
-
     var storageKey = 'lecture-side-closed';
     function setClosed(closed) {
       layout.classList.toggle('is-side-closed', closed);
@@ -184,11 +196,9 @@
         ? '<span aria-hidden="true">▶</span> 왼쪽 영역 열기'
         : '<span aria-hidden="true">◀</span> 왼쪽 영역 닫기';
     }
-
     var savedClosed = false;
     try { savedClosed = localStorage.getItem(storageKey) === 'true'; } catch (e) {}
     setClosed(savedClosed);
-
     sideToggle.addEventListener('click', function () {
       var nextClosed = !layout.classList.contains('is-side-closed');
       setClosed(nextClosed);
@@ -206,13 +216,10 @@
       if (!heading) return;
       var next = heading.nextElementSibling;
       if (next && next.classList.contains('lc-banner')) return;
-
       var figure = document.createElement('figure');
       figure.className = 'lc-banner';
       var img = document.createElement('img');
-      img.src = item.src;
-      img.alt = item.alt;
-      img.loading = 'lazy';
+      img.src = item.src; img.alt = item.alt; img.loading = 'lazy';
       img.addEventListener('error', function () { figure.style.display = 'none'; });
       figure.appendChild(img);
       heading.insertAdjacentElement('afterend', figure);
@@ -222,7 +229,6 @@
   function polishWeek02Content() {
     if (!isWeek02()) return;
     document.body.classList.add('week02-page');
-
     Array.prototype.forEach.call(document.querySelectorAll('.lecture-content .lc-table'), function (table) {
       var headRow = table.querySelector('thead tr');
       if (!headRow) return;
@@ -235,7 +241,6 @@
       if (labels.indexOf('구간|작성 내용') !== -1) table.classList.add('lc-table--label-content');
       if (labels.indexOf('고민해볼 문제') !== -1) table.classList.add('lc-table--question');
     });
-
     Array.prototype.forEach.call(document.querySelectorAll('.lecture-content .lc-h2'), function (heading) {
       if (heading.textContent.trim().indexOf('5.3 최신성 한계') === 0) {
         var p = heading.nextElementSibling;
@@ -249,14 +254,11 @@
         var tableWrap = heading.nextElementSibling;
         if (tableWrap && tableWrap.classList.contains('lc-p')) tableWrap = tableWrap.nextElementSibling;
         var table = tableWrap && tableWrap.querySelector ? tableWrap.querySelector('.lc-table') : null;
-        if (table) {
-          Array.prototype.forEach.call(table.querySelectorAll('tbody tr td:first-child'), function (cell) {
-            cell.textContent = cell.textContent.replace(/^([1-7])\.?\s+/, '$1. ');
-          });
-        }
+        if (table) Array.prototype.forEach.call(table.querySelectorAll('tbody tr td:first-child'), function (cell) {
+          cell.textContent = cell.textContent.replace(/^([1-7])\.?\s+/, '$1. ');
+        });
       }
     });
-
     var outputs = document.getElementById('outputs');
     if (outputs) {
       outputs.classList.add('lc-output-title');
@@ -270,48 +272,76 @@
   function enablePromptCopyBlocks() {
     if (!isWeek02()) return;
     Array.prototype.forEach.call(document.querySelectorAll('.lecture-content pre'), function (pre) {
-      if (pre.closest('.lc-code-shell')) return;
+      if (pre.closest('.lc-code-shell') || pre.closest('.lc-pdf-prompt-box')) return;
       var shell = document.createElement('div');
       shell.className = 'lc-code-shell';
       pre.parentNode.insertBefore(shell, pre);
       shell.appendChild(pre);
-
       var button = document.createElement('button');
       button.type = 'button';
       button.className = 'lc-copy-btn';
       button.setAttribute('aria-label', '프롬프트 복사');
       button.textContent = '복사';
       shell.insertBefore(button, pre);
-
-      button.addEventListener('click', function () {
+      bindCopyButton(button, function () {
         var code = pre.querySelector('code');
-        var text = code ? code.innerText : pre.innerText;
-        var done = function () {
-          button.textContent = '복사됨';
-          button.classList.add('is-copied');
-          window.setTimeout(function () {
-            button.textContent = '복사';
-            button.classList.remove('is-copied');
-          }, 1400);
-        };
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text, done); });
-        } else {
-          fallbackCopy(text, done);
-        }
+        return code ? code.innerText : pre.innerText;
       });
     });
   }
 
-  function fallbackCopy(text, done) {
-    var area = document.createElement('textarea');
-    area.value = text;
-    area.style.position = 'fixed';
-    area.style.opacity = '0';
-    document.body.appendChild(area);
-    area.select();
-    try { document.execCommand('copy'); done(); } catch (e) {}
-    document.body.removeChild(area);
+  function insertWeek02PdfPrompt() {
+    if (!isWeek02() || document.getElementById('week02PdfPrompt')) return;
+
+    var summaryDetails = null;
+    Array.prototype.some.call(document.querySelectorAll('.lecture-content details.lc-details'), function (details) {
+      var summary = details.querySelector('summary');
+      if (summary && summary.textContent.indexOf('[참고] 교재 써머리') !== -1) {
+        summaryDetails = details;
+        return true;
+      }
+      return false;
+    });
+    if (!summaryDetails) return;
+
+    var details = document.createElement('details');
+    details.className = 'lc-details lc-pdf-prompt-details';
+    details.id = 'week02PdfPrompt';
+
+    var summary = document.createElement('summary');
+    var strong = document.createElement('strong');
+    strong.textContent = '[참고] 강의교안 PDF로 생성, 다운로드 받기';
+    summary.appendChild(strong);
+    details.appendChild(summary);
+
+    var body = document.createElement('div');
+    body.className = 'lc-details-body';
+
+    var label = document.createElement('p');
+    label.className = 'lc-pdf-prompt-label';
+    label.textContent = '[프롬프트 : 웹뷰 PDF로 받기]';
+    body.appendChild(label);
+
+    var box = document.createElement('div');
+    box.className = 'lc-pdf-prompt-box';
+
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'lc-pdf-prompt-copy';
+    button.setAttribute('aria-label', '웹뷰 PDF 프롬프트 복사');
+    button.textContent = '복사';
+    box.appendChild(button);
+
+    var promptText = 'https://heejeong-kim.github.io/utilization-of-generativeai/pages/lecture-week01.html 강의교안을 웹 강의교안을 기반으로 A4 인쇄·배포용 PDF로 재편집해서 다운로드 받게 해줘';
+    var pre = document.createElement('pre');
+    pre.className = 'lc-pdf-prompt-text';
+    pre.textContent = promptText;
+    box.appendChild(pre);
+    body.appendChild(box);
+    details.appendChild(body);
+
+    summaryDetails.insertAdjacentElement('afterend', details);
+    bindCopyButton(button, function () { return promptText; });
   }
 
   enableWeek02Navigation();
@@ -319,6 +349,7 @@
   ensureWeek02SectionBanners();
   injectWeek02Styles();
   polishWeek02Content();
+  insertWeek02PdfPrompt();
   enablePromptCopyBlocks();
 
   const btn = document.getElementById('backTop');
