@@ -116,9 +116,10 @@
       }
       .week02-page .lc-code-shell pre {
         margin: 0; padding: 48px 22px 22px; border: 0; border-radius: 0;
-        background: #111318; color: #F4F6FB; font-size: 15px; line-height: 1.8;
+        background: #111318 !important; color: #F4F6FB !important; font-size: 15px; line-height: 1.8;
+        white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere;
       }
-      .week02-page .lc-code-shell pre code { color: inherit; }
+      .week02-page .lc-code-shell pre code { color: #F4F6FB !important; background: transparent !important; }
       .week02-page .lc-copy-btn {
         position: absolute; top: 10px; right: 10px; z-index: 2; padding: 7px 11px;
         border: 1px solid #3A4050; border-radius: 7px; background: #1D212B; color: #DDE2ED;
@@ -136,28 +137,11 @@
       .week02-page .lc-output-callout .lc-callout-body p:not(:first-child) strong { color: var(--ink-500) !important; }
 
       .week02-page .lc-pdf-prompt-details { margin-top: 12px; }
-      .week02-page .lc-pdf-prompt-intro { margin: 0 0 12px; color: var(--ink-700); }
       .week02-page .lc-pdf-prompt-label { margin: 0 0 8px; font-weight: 700; color: #445ED6; }
-      .week02-page .lc-pdf-prompt-box {
-        position: relative; margin-top: 8px; border-radius: 14px; overflow: hidden;
-        background: #111318; border: 1px solid #252936; box-shadow: 0 10px 28px rgba(20,16,42,.12);
-      }
-      .week02-page .lc-pdf-prompt-text {
-        margin: 0; padding: 50px 22px 22px; white-space: pre-wrap; word-break: break-word;
-        color: #F4F6FB; font-family: var(--font-mono, monospace); font-size: 14px; line-height: 1.75;
-      }
-      .week02-page .lc-pdf-prompt-copy {
-        position: absolute; top: 10px; right: 10px; z-index: 2; padding: 7px 11px;
-        border: 1px solid #3A4050; border-radius: 7px; background: #1D212B; color: #DDE2ED;
-        font-family: var(--font-body); font-size: 12.5px; font-weight: 600; cursor: pointer;
-      }
-      .week02-page .lc-pdf-prompt-copy:hover { background: #2A3040; color: #fff; }
-      .week02-page .lc-pdf-prompt-copy.is-copied { border-color: #48D8B5; color: #7DEFD3; }
 
       @media (max-width: 760px) {
         .week02-page .lc-table { min-width: 680px; }
         .week02-page .lc-code-shell pre { padding-inline: 18px; }
-        .week02-page .lc-pdf-prompt-text { padding-inline: 18px; font-size: 13px; }
       }
     `;
     document.head.appendChild(style);
@@ -272,7 +256,7 @@
   function enablePromptCopyBlocks() {
     if (!isWeek02()) return;
     Array.prototype.forEach.call(document.querySelectorAll('.lecture-content pre'), function (pre) {
-      if (pre.closest('.lc-code-shell') || pre.closest('.lc-pdf-prompt-box')) return;
+      if (pre.closest('.lc-code-shell')) return;
       var shell = document.createElement('div');
       shell.className = 'lc-code-shell';
       pre.parentNode.insertBefore(shell, pre);
@@ -322,22 +306,23 @@
     label.textContent = '[프롬프트 : 웹뷰 PDF로 받기]';
     body.appendChild(label);
 
-    var box = document.createElement('div');
-    box.className = 'lc-pdf-prompt-box';
+    var shell = document.createElement('div');
+    shell.className = 'lc-code-shell';
 
     var button = document.createElement('button');
     button.type = 'button';
-    button.className = 'lc-pdf-prompt-copy';
+    button.className = 'lc-copy-btn';
     button.setAttribute('aria-label', '웹뷰 PDF 프롬프트 복사');
     button.textContent = '복사';
-    box.appendChild(button);
+    shell.appendChild(button);
 
     var promptText = 'https://heejeong-kim.github.io/utilization-of-generativeai/pages/lecture-week01.html 강의교안을 웹 강의교안을 기반으로 A4 인쇄·배포용 PDF로 재편집해서 다운로드 받게 해줘';
     var pre = document.createElement('pre');
-    pre.className = 'lc-pdf-prompt-text';
-    pre.textContent = promptText;
-    box.appendChild(pre);
-    body.appendChild(box);
+    var code = document.createElement('code');
+    code.textContent = promptText;
+    pre.appendChild(code);
+    shell.appendChild(pre);
+    body.appendChild(shell);
     details.appendChild(body);
 
     summaryDetails.insertAdjacentElement('afterend', details);
