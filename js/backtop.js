@@ -316,7 +316,7 @@
     button.textContent = '복사';
     shell.appendChild(button);
 
-    var promptText = 'https://heejeong-kim.github.io/utilization-of-generativeai/pages/lecture-week01.html 강의교안을 웹 강의교안을 기반으로 A4 인쇄·배포용 PDF로 재편집해서 다운로드 받게 해줘';
+    var promptText = 'https://heejeong-kim.github.io/utilization-of-generativeai/pages/lecture-week01.html\n위 URL의 웹 강의교안을 기반으로 A4 인쇄·배포용 PDF로 재편집해서 다운로드 받게 해줘';
     var pre = document.createElement('pre');
     var code = document.createElement('code');
     code.textContent = promptText;
