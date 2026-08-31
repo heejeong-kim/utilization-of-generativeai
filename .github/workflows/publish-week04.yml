@@ -1,4 +1,4 @@
-name: Publish Week 04
+name: Fix Week 04 Webview
 on:
   push:
     branches: [main]
@@ -7,44 +7,51 @@ on:
 permissions:
   contents: write
 jobs:
-  wire-week04:
+  fix-week04:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Enable Week 04 links everywhere
+      - name: Fix password gate and H1 section images
         shell: python
         run: |
           from pathlib import Path
           import re
 
-          data = Path('js/data.js')
-          text = data.read_text(encoding='utf-8')
-          pattern = r"(no: 4, week: 'WEEK 04'[\s\S]*?thumb: '4\.png', link:) ''"
-          text, n = re.subn(pattern, r"\1 'pages/lecture-week04.html'", text, count=1)
-          if n != 1:
-              raise SystemExit('Could not enable WEEK 04 main card')
-          data.write_text(text, encoding='utf-8')
-
-          option_re = re.compile(r'<option disabled>04주차 · 프로젝트 유형 탐색과 AI 아이데이션</option>')
-          for path in sorted(Path('pages').glob('lecture-*.html')):
-              if path.name == 'lecture-week04.html':
-                  continue
-              html = path.read_text(encoding='utf-8')
-              html = option_re.sub('<option value="lecture-week04.html">04주차 · 프로젝트 유형 탐색과 AI 아이데이션</option>', html)
-              path.write_text(html, encoding='utf-8')
-
-          p = Path('pages/lecture-week03.html')
+          p = Path('pages/lecture-week04.html')
           html = p.read_text(encoding='utf-8')
-          old = '<span class="lecture-nav-item lecture-nav-item--next is-disabled"><span class="nav-dir">다음 강의 →</span><span class="nav-name">WEEK 04 · 프로젝트 유형 탐색과 AI 아이데이션</span></span>'
-          new = '<a class="lecture-nav-item lecture-nav-item--next" href="lecture-week04.html"><span class="nav-dir">다음 강의 →</span><span class="nav-name">WEEK 04 · 프로젝트 유형 탐색과 AI 아이데이션</span></a>'
-          if old not in html:
-              raise SystemExit('Could not wire WEEK 03 next navigation')
-          p.write_text(html.replace(old, new, 1), encoding='utf-8')
-      - name: Commit generated navigation changes
+
+          # Match the 1~3 week pattern: major Notion H1 sections use lc-h1 + banner image.
+          sections = [
+              ('s1', '1. 문제 발견', '4_1.png', '문제 발견'),
+              ('s2', '2. 문제를 프로젝트 아이디어로 바꾸기', '4_2.png', '문제를 프로젝트 아이디어로 바꾸기'),
+              ('s3', '3. 1차 후보 3~5개 선정', '4_3.png', '1차 후보 3~5개 선정'),
+              ('s4', '4. 아이디어 가능성 탐색', '4_4.png', '아이디어 가능성 탐색'),
+              ('s5', '5. 대학생 팀 프로젝트 수행 가능성 점검', '4_5.png', '대학생 팀 프로젝트 수행 가능성 점검'),
+              ('s6', '6. 프로젝트 후보 2개 선정', '4_6.png', '프로젝트 후보 2개 선정'),
+          ]
+          for sid, title, image, alt in sections:
+              old = f'<h2 class="lc-h2" id="{sid}">{title}</h2>'
+              new = f'<h1 class="lc-h1" id="{sid}">{title}</h1><figure class="lc-banner"><img src="../assets/img/{image}" alt="{alt}" loading="lazy"></figure>'
+              if old in html:
+                  html = html.replace(old, new, 1)
+              elif f'id="{sid}"' not in html or f'../assets/img/{image}' not in html:
+                  raise SystemExit(f'Could not update {sid}')
+
+          # Every entry to Week 04 must require the password again.
+          old_gate = "var key='week04-lecture-unlocked';try{if(sessionStorage.getItem(key)==='1')gate.hidden=true;}catch(e){}form.addEventListener('submit',function(e){e.preventDefault();if(input.value==='2468'){gate.hidden=true;err.hidden=true;try{sessionStorage.setItem(key,'1');}catch(x){}}else{err.hidden=false;input.value='';input.focus();}});"
+          new_gate = "form.addEventListener('submit',function(e){e.preventDefault();if(input.value==='2468'){gate.hidden=true;err.hidden=true;}else{err.hidden=false;input.value='';input.focus();}});"
+          if old_gate in html:
+              html = html.replace(old_gate, new_gate, 1)
+          else:
+              html = re.sub(r"var key='week04-lecture-unlocked';try\{if\(sessionStorage\.getItem\(key\)==='1'\)gate\.hidden=true;\}catch\(e\)\{\}", '', html, count=1)
+              html = re.sub(r"try\{sessionStorage\.setItem\(key,'1'\);\}catch\(x\)\{\}", '', html, count=1)
+
+          p.write_text(html, encoding='utf-8')
+      - name: Commit fixes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add js/data.js pages/lecture-*.html
+          git add pages/lecture-week04.html
           git diff --cached --quiet && exit 0
-          git commit -m "Publish week 04 lecture and navigation"
+          git commit -m "Fix week 04 password gate and section banners"
           git push
