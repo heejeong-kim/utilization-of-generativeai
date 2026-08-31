@@ -1,0 +1,50 @@
+name: Publish Week 04
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-week04.yml'
+permissions:
+  contents: write
+jobs:
+  wire-week04:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable Week 04 links everywhere
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          data = Path('js/data.js')
+          text = data.read_text(encoding='utf-8')
+          pattern = r"(no: 4, week: 'WEEK 04'[\s\S]*?thumb: '4\.png', link:) ''"
+          text, n = re.subn(pattern, r"\1 'pages/lecture-week04.html'", text, count=1)
+          if n != 1:
+              raise SystemExit('Could not enable WEEK 04 main card')
+          data.write_text(text, encoding='utf-8')
+
+          option_re = re.compile(r'<option disabled>04주차 · 프로젝트 유형 탐색과 AI 아이데이션</option>')
+          for path in sorted(Path('pages').glob('lecture-*.html')):
+              if path.name == 'lecture-week04.html':
+                  continue
+              html = path.read_text(encoding='utf-8')
+              html = option_re.sub('<option value="lecture-week04.html">04주차 · 프로젝트 유형 탐색과 AI 아이데이션</option>', html)
+              path.write_text(html, encoding='utf-8')
+
+          p = Path('pages/lecture-week03.html')
+          html = p.read_text(encoding='utf-8')
+          old = '<span class="lecture-nav-item lecture-nav-item--next is-disabled"><span class="nav-dir">다음 강의 →</span><span class="nav-name">WEEK 04 · 프로젝트 유형 탐색과 AI 아이데이션</span></span>'
+          new = '<a class="lecture-nav-item lecture-nav-item--next" href="lecture-week04.html"><span class="nav-dir">다음 강의 →</span><span class="nav-name">WEEK 04 · 프로젝트 유형 탐색과 AI 아이데이션</span></a>'
+          if old not in html:
+              raise SystemExit('Could not wire WEEK 03 next navigation')
+          p.write_text(html.replace(old, new, 1), encoding='utf-8')
+      - name: Commit generated navigation changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/data.js pages/lecture-*.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish week 04 lecture and navigation"
+          git push
