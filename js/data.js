@@ -63,7 +63,7 @@ const WEEKS = [
       'AI로 아이디어를 발산하고 후보를 선정한다'
     ],
     tags: ['아이데이션', 'SCAMPER', '평가 매트릭스'],
-    thumb: '4.png', link: ''
+    thumb: '4.png', link: 'pages/lecture-week04.html'
   },
   {
     no: 5, week: 'WEEK 05', type: 'class', badge: '수업',
