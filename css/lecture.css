@@ -392,7 +392,7 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
   .lc-table--project td:nth-child(3)::before { content: '팀 산출물'; }
 }
 
-/* ==========================================================================
+/* ========================================================================== 
    주차 상세 확장 요소 (대단원 H1 · H4 · 번호목록 · 접기 · 콜아웃 색상 등)
    ========================================================================== */
 
@@ -630,3 +630,10 @@ button.lecture-nav-item:hover .nav-name { color: var(--violet-500); }
   line-height: 1.7;
 }
 .lc-preview strong { color: var(--mint-300); }
+
+/* 인쇄/PDF 저장 시 [참고] 교재 써머리 전체 영역 제외 */
+@media print {
+  .lc-details:has(.lc-lock[data-lock-src$="-summary.html"]) {
+    display: none !important;
+  }
+}
