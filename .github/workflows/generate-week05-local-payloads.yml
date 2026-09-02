@@ -1,0 +1,36 @@
+name: Generate Week 05 local payloads
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pages/week05-full.enc.json'
+      - 'pages/week05-practice-bundle.enc.json'
+      - 'scripts/generate-week05-local-payloads.mjs'
+      - '.github/workflows/generate-week05-local-payloads.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Generate local payload wrappers
+        run: node scripts/generate-week05-local-payloads.mjs
+      - name: Commit generated wrappers
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add pages/week05-full.enc.js pages/week05-practice-bundle.enc.js
+          if git diff --cached --quiet; then
+            echo 'No generated changes.'
+            exit 0
+          fi
+          git commit -m 'Generate Week 05 local payload wrappers'
+          git push
