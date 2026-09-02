@@ -44,6 +44,10 @@
     const frame = lock.querySelector('.lc-lock-frame');
     if (!src || !form || !input || !frame) return;
 
+    // Encrypted passwords are no longer numeric-only, so ensure mobile devices
+    // show a normal keyboard even if legacy HTML still has inputmode="numeric".
+    input.removeAttribute('inputmode');
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (errorEl) errorEl.hidden = true;
