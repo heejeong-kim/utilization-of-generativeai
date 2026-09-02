@@ -73,7 +73,7 @@ const WEEKS = [
       '지침과 테스트로 응답 품질을 개선한다'
     ],
     tags: ['맞춤형 GPT', '지침 설계', '프로토타입'],
-    thumb: '5.png', link: ''
+    thumb: '5.png', link: 'pages/lecture-week05.html'
   },
   {
     no: 6, week: 'WEEK 06', type: 'class', badge: '수업',
