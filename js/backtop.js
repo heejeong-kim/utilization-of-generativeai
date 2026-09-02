@@ -47,6 +47,76 @@
     });
   }
 
+  function isWeek04() {
+    var eyebrow = document.querySelector('.lecture-eyebrow strong');
+    return !!eyebrow && eyebrow.textContent.indexOf('WEEK 04') !== -1;
+  }
+
+  function ensureWeek04PromptUI(root) {
+    if (!isWeek04()) return;
+    root = root || document;
+
+    if (!document.getElementById('week04-prompt-ui-style')) {
+      var style = document.createElement('style');
+      style.id = 'week04-prompt-ui-style';
+      style.textContent = [
+        '.week04-page .lc-prompt-wrap{position:relative;margin:8px 0 24px}',
+        '.week04-page .lc-prompt{display:block;box-sizing:border-box;width:100%;margin:0!important;padding:20px 86px 20px 20px!important;border:1px solid #20242e!important;border-radius:14px!important;background:#000!important;color:#fff!important;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;line-height:1.75;font-family:\'IBM Plex Mono\',monospace;font-size:14px;box-shadow:0 10px 28px rgba(20,16,42,.12)}',
+        '.week04-page .lc-prompt *{color:#fff!important;background:transparent!important}',
+        '.week04-page .lc-prompt-copy{position:absolute;top:12px;right:12px;z-index:3;border:1px solid rgba(255,255,255,.38);border-radius:8px;background:#1d212b;color:#fff;padding:8px 11px;font:600 12px/1 \'IBM Plex Sans KR\',sans-serif;cursor:pointer;transition:background .2s ease,border-color .2s ease,transform .15s ease}',
+        '.week04-page .lc-prompt-copy:hover{background:#2a3040;border-color:rgba(255,255,255,.68)}',
+        '.week04-page .lc-prompt-copy:active{transform:translateY(1px)}',
+        '.week04-page .lc-prompt-copy:focus-visible{outline:2px solid #fff;outline-offset:2px}',
+        '.week04-page .lc-prompt-copy.is-copied{border-color:#48d8b5;color:#7defd3}'
+      ].join('');
+      document.head.appendChild(style);
+    }
+
+    Array.prototype.forEach.call(root.querySelectorAll ? root.querySelectorAll('.lc-prompt') : [], function (pre) {
+      var wrap = pre.parentElement && pre.parentElement.classList.contains('lc-prompt-wrap') ? pre.parentElement : null;
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.className = 'lc-prompt-wrap';
+        pre.parentNode.insertBefore(wrap, pre);
+        wrap.appendChild(pre);
+      }
+      if (wrap.querySelector('.lc-prompt-copy')) return;
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'lc-prompt-copy';
+      btn.textContent = '복사';
+      btn.setAttribute('aria-label', '프롬프트 복사');
+      btn.addEventListener('click', function () {
+        var text = pre.textContent;
+        function done() {
+          btn.textContent = '복사됨';
+          btn.classList.add('is-copied');
+          window.setTimeout(function () {
+            btn.textContent = '복사';
+            btn.classList.remove('is-copied');
+          }, 1400);
+        }
+        function fallback() {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); done(); } catch (e) {}
+          document.body.removeChild(ta);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(fallback);
+        } else {
+          fallback();
+        }
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
   function installWeek04Locks() {
     var eyebrow = document.querySelector('.lecture-eyebrow strong');
     if (!eyebrow || eyebrow.textContent.indexOf('WEEK 04') === -1) return;
@@ -85,6 +155,7 @@
       blocks.forEach(function (b, i) { b.innerHTML = originals[i]; });
       if (outputHolder) outputHolder.classList.remove('w4-locked-content');
       if (outputGate) { outputGate.remove(); outputGate = null; }
+      ensureWeek04PromptUI(document);
     }
     function bindGate(root) {
       var form = root.querySelector('form');
@@ -122,7 +193,9 @@
 
   function enhance() {
     enableWeekNavigation();
+    ensureWeek04PromptUI(document);
     installWeek04Locks();
+    ensureWeek04PromptUI(document);
   }
 
   if (document.readyState === 'loading') {
