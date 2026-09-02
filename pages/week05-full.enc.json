@@ -1,1 +1,1 @@
-{"version":1,"algorithm":"AES-GCM","kdf":"PBKDF2-SHA256","iterations":600000,"salt":"REDACTED"}
+{"version":1,"algorithm":"AES-GCM","kdf":"PBKDF2-SHA256","iterations":600000,"salt":"j2xJ4o1dYzBfBLKJ3iM2vA==","iv":"qzUYPVMSXh9RJvOc","data":"INVALID"}
