@@ -126,7 +126,7 @@
     <details class="lc-details">
       <summary><strong>[참고] 교재 써머리</strong></summary>
       <div class="lc-details-body">
-        <div class="lc-lock" id="lock-summary" data-lock-password="2468" data-lock-src="week03-summary.html">
+        <div class="lc-lock" id="lock-summary" data-lock-encrypted="week03-summary.enc.json">
           <div class="lc-lock-gate">
             <p class="lc-lock-icon" aria-hidden="true">🔒</p>
             <p class="lc-lock-title">비밀번호가 필요한 자료입니다</p>
@@ -352,7 +352,7 @@
     <div class="lc-callout lc-callout--gray"><span class="lc-callout-icon" aria-hidden="true">💡</span><div class="lc-callout-body"><p>3주차에서는 프롬프트 작성 자체보다 생성형 AI의 검색·조사·외부 자료 연결·컴퓨터 작업 기능을 이해하는 것으로 모든 수강생이 동일한 주제로 다섯 가지 실습을 순서대로 수행하고, 각 실습에서 기능의 위치·사용 조건·작업 과정·결과를 기록함</p></div></div>
     <p class="lc-note">실습 공통 주제: 대학 수업에서 생성형 AI를 활용하는 방법과 주의할 점<br>계정 : Gemini 학생 프로모션이 제공되는 Pro를 활용</p>
 
-    <div class="lc-lock" id="lock-lab" data-lock-password="8989" data-lock-src="week03-lab.html">
+    <div class="lc-lock" id="lock-lab" data-lock-encrypted="week03-lab.enc.json">
       <div class="lc-lock-gate">
         <p class="lc-lock-icon" aria-hidden="true">🔒</p>
         <p class="lc-lock-title">비밀번호가 필요한 실습입니다</p>
@@ -413,7 +413,7 @@
     if(cb) cb();
   }
 
-  var locks=document.querySelectorAll('.lc-lock');
+  var locks=document.querySelectorAll('.lc-lock[data-lock-password]');
   locks.forEach(function(lock){
     var pass=lock.getAttribute('data-lock-password');
     var src=lock.getAttribute('data-lock-src');
@@ -444,6 +444,7 @@
   });
 })();
 </script>
+<script src="../js/secure-lock.js"></script>
 <script src="../js/backtop.js"></script>
 </body>
 </html>

@@ -121,7 +121,7 @@
     <details class="lc-details">
       <summary><strong>[참고] 교재 써머리</strong></summary>
       <div class="lc-details-body">
-        <div class="lc-lock" id="lock-summary" data-lock-password="2468" data-lock-src="week02-summary.html">
+        <div class="lc-lock" id="lock-summary" data-lock-encrypted="week02-summary.enc.json">
           <div class="lc-lock-gate">
             <p class="lc-lock-icon" aria-hidden="true">🔒</p>
             <p class="lc-lock-title">비밀번호가 필요한 자료입니다</p>
@@ -511,7 +511,7 @@
   function progress(){var max=document.documentElement.scrollHeight-window.innerHeight;var ratio=max>0?window.scrollY/max:0;if(bar)bar.style.transform='scaleX('+ratio.toFixed(4)+')';}
   window.addEventListener('scroll',progress,{passive:true});window.addEventListener('resize',progress);progress();
 
-  var locks=document.querySelectorAll('.lc-lock');
+  var locks=document.querySelectorAll('.lc-lock[data-lock-password]');
   locks.forEach(function(lock){
     var pass=lock.getAttribute('data-lock-password');
     var src=lock.getAttribute('data-lock-src');
@@ -542,6 +542,7 @@
   });
 })();
 </script>
+<script src="../js/secure-lock.js"></script>
 <script src="../js/backtop.js"></script>
 </body>
 </html>
