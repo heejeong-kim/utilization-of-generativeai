@@ -25,10 +25,12 @@ const pageUrl = new URL('../pages/lecture-week05.html', import.meta.url);
 let html = await readFile(pageUrl, 'utf8');
 
 if (!html.includes('week05-full.enc.js')) {
-  html = html.replace(
-    '<script>\n(()=>{\'use strict\';',
-    '<script src="week05-full.enc.js"></script>\n<script src="week05-practice-bundle.enc.js"></script>\n<script>\n(()=>{\'use strict\';'
-  );
+  const loaderScripts = '<script src="week05-full.enc.js"></script>\n<script src="week05-practice-bundle.enc.js"></script>\n';
+  if (html.includes('</main>\n<script>')) {
+    html = html.replace('</main>\n<script>', `</main>\n${loaderScripts}<script>`);
+  } else {
+    html = html.replace('<script>', `${loaderScripts}<script>`);
+  }
 }
 
 html = html.replace(
