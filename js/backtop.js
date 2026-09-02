@@ -16,20 +16,33 @@
     });
   }
 
-  function activateNavItem(item, href) {
-    if (!item) return;
-    item.classList.remove('is-disabled');
-    item.removeAttribute('aria-disabled');
-    item.setAttribute('data-href', href);
-    if (item.tagName === 'A') item.setAttribute('href', href);
-    if (!item.dataset.openWeekBound) {
-      item.dataset.openWeekBound = '1';
-      item.addEventListener('click', function (e) {
-        if (item.tagName !== 'A') {
-          e.preventDefault();
-          window.location.href = href;
-        }
-      });
+  function currentWeekNumber() {
+    var eyebrow = document.querySelector('.lecture-eyebrow strong');
+    var text = eyebrow ? eyebrow.textContent : '';
+    var m = text.match(/WEEK\s*0?(\d+)/i);
+    if (m) return parseInt(m[1], 10);
+    m = window.location.pathname.match(/lecture-week0?(\d+)\.html/i);
+    return m ? parseInt(m[1], 10) : 0;
+  }
+
+  function setLectureNavigation() {
+    var week = currentWeekNumber();
+    if (week !== 4 && week !== 5) return;
+    var article = document.getElementById('lecture-content');
+    if (!article) return;
+    var nav = article.querySelector('.lecture-nav');
+    if (!nav) {
+      nav = document.createElement('nav');
+      nav.className = 'lecture-nav';
+      nav.setAttribute('aria-label', '강의 이동');
+      article.appendChild(nav);
+    }
+    if (week === 4) {
+      nav.innerHTML = '<a class="lecture-nav-item" href="lecture-week03.html"><span class="nav-dir">← 이전 강의</span><span class="nav-name">WEEK 03 · 주요 AI 플랫폼과 확장 기능 탐색</span></a>' +
+        '<a class="lecture-nav-item lecture-nav-item--next" href="lecture-week05.html"><span class="nav-dir">다음 강의 →</span><span class="nav-name">WEEK 05 · 나만의 AI 비서 설계</span></a>';
+    } else {
+      nav.innerHTML = '<a class="lecture-nav-item" href="lecture-week04.html"><span class="nav-dir">← 이전 강의</span><span class="nav-name">WEEK 04 · 프로젝트 유형 탐색과 AI 아이데이션</span></a>' +
+        '<span class="lecture-nav-item lecture-nav-item--next is-disabled" aria-disabled="true"><span class="nav-dir">다음 강의 →</span><span class="nav-name">WEEK 06 · 멀티모달 AI와 프로젝트 활용</span></span>';
     }
   }
 
@@ -37,17 +50,11 @@
     var select = document.getElementById('weekSelect');
     setOpenOption(select, '04주차 · 프로젝트 유형 탐색과 AI 아이데이션', 'lecture-week04.html');
     setOpenOption(select, '05주차 · 나만의 AI 비서 설계', 'lecture-week05.html');
-    Array.prototype.forEach.call(document.querySelectorAll('.lecture-nav-item'), function (item) {
-      var name = item.querySelector('.nav-name');
-      var text = name ? name.textContent : item.textContent;
-      if (text.indexOf('WEEK 04') !== -1 || text.indexOf('04주차') !== -1) activateNavItem(item, 'lecture-week04.html');
-      if (text.indexOf('WEEK 05') !== -1 || text.indexOf('05주차') !== -1) activateNavItem(item, 'lecture-week05.html');
-    });
+    setLectureNavigation();
   }
 
   function isWeek04() {
-    var eyebrow = document.querySelector('.lecture-eyebrow strong');
-    return !!eyebrow && eyebrow.textContent.indexOf('WEEK 04') !== -1;
+    return currentWeekNumber() === 4;
   }
 
   function resizeFrame(frame) {
