@@ -20,3 +20,26 @@ for (const job of jobs) {
   await writeFile(job.js, output, 'utf8');
   console.log(`generated ${job.js.pathname.split('/').pop()}`);
 }
+
+const pageUrl = new URL('../pages/lecture-week05.html', import.meta.url);
+let html = await readFile(pageUrl, 'utf8');
+
+if (!html.includes('week05-full.enc.js')) {
+  html = html.replace(
+    '<script>\n(()=>{\'use strict\';',
+    '<script src="week05-full.enc.js"></script>\n<script src="week05-practice-bundle.enc.js"></script>\n<script>\n(()=>{\'use strict\';'
+  );
+}
+
+html = html.replace(
+  /const getPayload=\(\)=>payloadPromise\|\|\(payloadPromise=fetch\('week05-practice-bundle\.enc\.json',\{cache:'no-store'\}\)\.then\(r=>\{if\(!r\.ok\)throw new Error\('bundle'\);return r\.json\(\)\}\)\);/,
+  "const getPayload=()=>payloadPromise||(payloadPromise=Promise.resolve(window.WEEK05_PRACTICE_PAYLOAD).then(p=>{if(!p)throw new Error('bundle');return p}));"
+);
+
+html = html.replace(
+  "const r=await fetch('week05-full.enc.json',{cache:'no-store'});\n      if(!r.ok) throw new Error('load');\n      const payload=await r.json();",
+  "const payload=window.WEEK05_FULL_PAYLOAD;\n      if(!payload) throw new Error('load');"
+);
+
+await writeFile(pageUrl, html, 'utf8');
+console.log('updated lecture-week05.html for file:// compatibility');
