@@ -35,8 +35,8 @@
       nav = document.createElement('nav');
       nav.className = 'lecture-nav';
       nav.setAttribute('aria-label', '강의 이동');
-      article.appendChild(nav);
     }
+    if (nav.parentNode !== article || nav !== article.lastElementChild) article.appendChild(nav);
     if (week === 4) {
       nav.innerHTML = '<a class="lecture-nav-item" href="lecture-week03.html"><span class="nav-dir">← 이전 강의</span><span class="nav-name">WEEK 03 · 주요 AI 플랫폼과 확장 기능 탐색</span></a>' +
         '<a class="lecture-nav-item lecture-nav-item--next" href="lecture-week05.html"><span class="nav-dir">다음 강의 →</span><span class="nav-name">WEEK 05 · 나만의 AI 비서 설계</span></a>';
@@ -223,6 +223,7 @@
     enableWeekNavigation();
     ensureWeek04PromptUI(document);
     installWeek04Locks();
+    enableWeekNavigation();
     ensureWeek04PromptUI(document);
     ensureWeek04FrameSizing(document);
     if (isWeek04()) {
