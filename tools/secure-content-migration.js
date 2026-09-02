@@ -215,12 +215,24 @@ const vaultPlain = Buffer.from(JSON.stringify({
   passwords: pw
 }, null, 2), 'utf8');
 
-const encryptedVault = crypto.publicEncrypt(
+const vaultKey = crypto.randomBytes(32);
+const vaultIv = crypto.randomBytes(12);
+const vaultCipher = crypto.createCipheriv('aes-256-gcm', vaultKey, vaultIv);
+const vaultCiphertext = Buffer.concat([vaultCipher.update(vaultPlain), vaultCipher.final()]);
+const vaultTag = vaultCipher.getAuthTag();
+const wrappedKey = crypto.publicEncrypt(
   { key: publicKey, padding: crypto.constants.RSA_PKCS1_OAEP_PADDING, oaepHash: 'sha256' },
-  vaultPlain
+  vaultKey
 );
 fs.mkdirSync('.security', { recursive: true });
-fs.writeFileSync('.security/password-vault.enc', encryptedVault.toString('base64'));
+fs.writeFileSync('.security/password-vault.enc', JSON.stringify({
+  version: 1,
+  scheme: 'RSA-OAEP-SHA256 + AES-256-GCM',
+  wrappedKey: wrappedKey.toString('base64'),
+  iv: vaultIv.toString('base64'),
+  tag: vaultTag.toString('base64'),
+  data: vaultCiphertext.toString('base64')
+}));
 
 if (fs.existsSync('.github/workflows/secure-content-migration.yml')) fs.unlinkSync('.github/workflows/secure-content-migration.yml');
 if (fs.existsSync('tools/secure-content-migration.js')) fs.unlinkSync('tools/secure-content-migration.js');
