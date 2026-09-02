@@ -50,6 +50,42 @@
     return !!eyebrow && eyebrow.textContent.indexOf('WEEK 04') !== -1;
   }
 
+  function resizeFrame(frame) {
+    if (!frame) return;
+    frame.setAttribute('scrolling', 'no');
+    frame.style.overflow = 'hidden';
+    frame.style.width = '100%';
+    frame.style.display = 'block';
+    try {
+      var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+      if (!doc) return;
+      var body = doc.body, html = doc.documentElement;
+      if (!body || !html) return;
+      body.style.overflow = 'hidden';
+      html.style.overflow = 'hidden';
+      frame.style.height = '1px';
+      var h = Math.max(body.scrollHeight, body.offsetHeight, html.scrollHeight, html.offsetHeight, html.clientHeight);
+      frame.style.height = Math.max(80, h + 4) + 'px';
+    } catch (e) {}
+  }
+
+  function ensureWeek04FrameSizing(root) {
+    if (!isWeek04()) return;
+    root = root || document;
+    var frames = root.querySelectorAll ? root.querySelectorAll('iframe') : [];
+    Array.prototype.forEach.call(frames, function (frame) {
+      if (!frame.dataset.week04AutoHeight) {
+        frame.dataset.week04AutoHeight = '1';
+        frame.addEventListener('load', function () {
+          resizeFrame(frame);
+          window.setTimeout(function () { resizeFrame(frame); }, 60);
+          window.setTimeout(function () { resizeFrame(frame); }, 300);
+        });
+      }
+      resizeFrame(frame);
+    });
+  }
+
   function ensureWeek04PromptUI(root) {
     if (!isWeek04()) return;
     root = root || document;
@@ -63,7 +99,8 @@
         '.week04-page .lc-prompt-copy{position:absolute;top:12px;right:12px;z-index:3;border:1px solid rgba(255,255,255,.38);border-radius:8px;background:#1d212b;color:#fff;padding:8px 11px;font:600 12px/1 \'IBM Plex Sans KR\',sans-serif;cursor:pointer}',
         '.week04-page .lc-prompt-copy:hover{background:#2a3040;border-color:rgba(255,255,255,.68)}',
         '.week04-page .lc-prompt-copy:focus-visible{outline:2px solid #fff;outline-offset:2px}',
-        '.week04-page .lc-prompt-copy.is-copied{border-color:#48d8b5;color:#7defd3}'
+        '.week04-page .lc-prompt-copy.is-copied{border-color:#48d8b5;color:#7defd3}',
+        '.week04-page iframe{max-width:100%;border:0;overflow:hidden}'
       ].join('');
       document.head.appendChild(style);
     }
@@ -120,6 +157,9 @@
       if (outputHolder) outputHolder.classList.remove('w4-locked-content');
       if (outputGate) { outputGate.remove(); outputGate = null; }
       ensureWeek04PromptUI(document);
+      window.setTimeout(function () { ensureWeek04FrameSizing(document); }, 0);
+      window.setTimeout(function () { ensureWeek04FrameSizing(document); }, 120);
+      window.setTimeout(function () { ensureWeek04FrameSizing(document); }, 500);
     }
     function bindGate(root) {
       var form = root.querySelector('form'), input = root.querySelector('input'), error = root.querySelector('.w4-lock-error');
@@ -177,6 +217,15 @@
     ensureWeek04PromptUI(document);
     installWeek04Locks();
     ensureWeek04PromptUI(document);
+    ensureWeek04FrameSizing(document);
+    if (isWeek04()) {
+      window.addEventListener('resize', function () { window.setTimeout(function () { ensureWeek04FrameSizing(document); }, 80); });
+      document.addEventListener('toggle', function () { window.setTimeout(function () { ensureWeek04FrameSizing(document); }, 40); }, true);
+      if (window.ResizeObserver) {
+        var ro = new ResizeObserver(function () { ensureWeek04FrameSizing(document); });
+        Array.prototype.forEach.call(document.querySelectorAll('.lecture-content'), function (el) { ro.observe(el); });
+      }
+    }
   }
   if (document.readyState === 'loading') { window.setTimeout(enhance, 0); document.addEventListener('DOMContentLoaded', enhance, { once: true }); }
   else enhance();
