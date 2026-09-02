@@ -23,10 +23,16 @@ button{border:0;border-radius:10px;background:#5b4de3;color:#fff;padding:12px 16
 (()=>{'use strict';
   const enc=new TextEncoder(),dec=new TextDecoder();
   const b64=s=>{const b=atob(s),o=new Uint8Array(b.length);for(let i=0;i<b.length;i++)o[i]=b.charCodeAt(i);return o};
+  async function gunzip(bytes){
+    if(!('DecompressionStream' in window)) throw new Error('This browser does not support gzip decompression.');
+    const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    return dec.decode(await new Response(stream).arrayBuffer());
+  }
   async function decrypt(password,payload){
     const m=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveKey']);
     const k=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(payload.salt),iterations:payload.iterations,hash:'SHA-256'},m,{name:'AES-GCM',length:256},false,['decrypt']);
-    return dec.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(payload.iv)},k,b64(payload.data)));
+    const plain=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(payload.iv)},k,b64(payload.data)));
+    return payload.compression==='gzip' ? await gunzip(plain) : dec.decode(plain);
   }
   document.getElementById('f').addEventListener('submit',async e=>{
     e.preventDefault();const p=document.getElementById('p'),err=document.getElementById('e');err.hidden=true;
