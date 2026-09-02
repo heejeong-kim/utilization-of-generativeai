@@ -44,6 +44,14 @@
     const frame = lock.querySelector('.lc-lock-frame');
     if (!src || !form || !input || !frame) return;
 
+    // Give the personal practice area as much useful vertical space as possible.
+    // The iframe remains independently scrollable when its content is taller.
+    if (lock.id === 'lock-lab') {
+      frame.style.height = 'clamp(720px, 88dvh, 1200px)';
+      frame.style.overflow = 'auto';
+      frame.setAttribute('scrolling', 'yes');
+    }
+
     // Encrypted passwords are no longer numeric-only, so ensure mobile devices
     // show a normal keyboard even if legacy HTML still has inputmode="numeric".
     input.removeAttribute('inputmode');
