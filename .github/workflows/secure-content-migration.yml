@@ -24,3 +24,4 @@ jobs:
           git add -A
           git commit -m "Secure password-protected lecture content"
           git push
+# retry after vault encryption fix
