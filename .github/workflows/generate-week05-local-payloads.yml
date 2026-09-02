@@ -23,14 +23,14 @@ jobs:
           node-version: '20'
       - name: Generate local payload wrappers
         run: node scripts/generate-week05-local-payloads.mjs
-      - name: Commit generated wrappers
+      - name: Commit generated local files
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add pages/week05-full.enc.js pages/week05-practice-bundle.enc.js
+          git add pages/week05-full.enc.js pages/week05-practice-bundle.enc.js pages/lecture-week05.html
           if git diff --cached --quiet; then
             echo 'No generated changes.'
             exit 0
           fi
-          git commit -m 'Generate Week 05 local payload wrappers'
+          git commit -m 'Generate Week 05 local-compatible files'
           git push
