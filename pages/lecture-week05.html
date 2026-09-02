@@ -26,12 +26,9 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
     return payload.compression==='gzip' ? await gunzip(plain) : dec.decode(plain);
   }
   function withSectionImages(html){
-    let index=0;
-    return html.replace(/(<h1\b[^>]*class=["'][^"']*\blc-h1\b[^"']*["'][^>]*>.*?<\/h1>)/gis,function(match){
-      index+=1;
-      if(index>11) return match;
-      return match+'\n<figure class="lc-banner"><img src="../assets/img/5_'+index+'.png" alt="5주차 '+index+'장 대표 이미지" loading="lazy"></figure>';
-    });
+    const style=`<style id="week05-section-image-style">.week05-section-banner{margin:18px 0 28px}.week05-section-banner img{display:block;width:100%;height:auto;border-radius:14px;object-fit:cover}</style>`;
+    const script=`<script>(()=>{'use strict';function apply(){const root=document.getElementById('lecture-content');if(!root)return;const headings=Array.from(root.querySelectorAll('h1')).filter(h=>!h.classList.contains('lecture-title')).slice(0,11);headings.forEach((h,i)=>{if(h.nextElementSibling&&h.nextElementSibling.classList.contains('week05-section-banner'))return;const f=document.createElement('figure');f.className='lc-banner week05-section-banner';const img=document.createElement('img');img.src='../assets/img/5_'+(i+1)+'.png';img.alt='5주차 '+(i+1)+'장 대표 이미지';img.loading='lazy';f.appendChild(img);h.insertAdjacentElement('afterend',f)})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply()})();<\/script>`;
+    return html.replace('</head>',style+'</head>').replace('</body>',script+'</body>');
   }
   function withOutputLayout(html){
     return html.replace(/<div class="lc-output-box"><h3>((?:개인|팀) 산출물[\s\S]*?)<\/h3><ol class="lc-list">([\s\S]*?)<\/ol><\/div>/g,function(_,title,items){
