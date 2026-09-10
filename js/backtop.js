@@ -1,4 +1,4 @@
-/* backtop.js wrapper: preserve original shared behavior and open Week 04/05 navigation */
+/* backtop.js wrapper: preserve original shared behavior and open Week 04/05/06 navigation */
 (function () {
   'use strict';
 
@@ -42,7 +42,7 @@
         '<a class="lecture-nav-item lecture-nav-item--next" href="lecture-week05.html"><span class="nav-dir">다음 강의 →</span><span class="nav-name">WEEK 05 · 나만의 AI 비서 설계</span></a>';
     } else {
       nav.innerHTML = '<a class="lecture-nav-item" href="lecture-week04.html"><span class="nav-dir">← 이전 강의</span><span class="nav-name">WEEK 04 · 프로젝트 유형 탐색과 AI 아이데이션</span></a>' +
-        '<span class="lecture-nav-item lecture-nav-item--next is-disabled" aria-disabled="true"><span class="nav-dir">다음 강의 →</span><span class="nav-name">WEEK 06 · 멀티모달 AI와 프로젝트 활용</span></span>';
+        '<a class="lecture-nav-item lecture-nav-item--next" href="lecture-week06.html"><span class="nav-dir">다음 강의 →</span><span class="nav-name">WEEK 06 · 멀티모달 AI와 프로젝트 활용</span></a>';
     }
   }
 
@@ -50,6 +50,7 @@
     var select = document.getElementById('weekSelect');
     setOpenOption(select, '04주차 · 프로젝트 유형 탐색과 AI 아이데이션', 'lecture-week04.html');
     setOpenOption(select, '05주차 · 나만의 AI 비서 설계', 'lecture-week05.html');
+    setOpenOption(select, '06주차 · 멀티모달 AI와 프로젝트 활용', 'lecture-week06.html');
     setLectureNavigation();
   }
 

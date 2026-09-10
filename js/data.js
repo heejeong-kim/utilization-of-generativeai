@@ -83,7 +83,7 @@ const WEEKS = [
       '프로젝트 활용과 저작권 이슈를 점검한다'
     ],
     tags: ['멀티모달', '콘텐츠 생성', '저작권'],
-    thumb: '6.png', link: ''
+    thumb: '6.png', link: 'pages/lecture-week06.html'
   },
   {
     no: 7, week: 'WEEK 07', type: 'class', badge: '수업',
