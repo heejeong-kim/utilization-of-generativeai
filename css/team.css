@@ -87,7 +87,8 @@
 .opt { background: var(--paper-tint); color: var(--ink-500); }
 
 .form-card input[type="text"],
-.form-card input[type="url"] {
+.form-card input[type="url"],
+.form-card select {
   width: 100%;
   padding: 13px 16px;
   border: 1px solid var(--line);
@@ -98,13 +99,20 @@
   transition: border-color .22s var(--ease), box-shadow .22s var(--ease), background-color .22s var(--ease);
 }
 .form-card input::placeholder { color: var(--ink-300); }
-.form-card input:hover { border-color: var(--violet-200); }
+.form-card input:hover,
+.form-card select:hover { border-color: var(--violet-200); }
 .form-card input:focus {
   outline: none;
   border-color: var(--violet-500);
   box-shadow: 0 0 0 4px rgba(129, 104, 255, .15);
 }
-.form-card input.is-invalid {
+.form-card select:focus {
+  outline: none;
+  border-color: var(--violet-500);
+  box-shadow: 0 0 0 4px rgba(129, 104, 255, .15);
+}
+.form-card input.is-invalid,
+.form-card select.is-invalid {
   border-color: #E0538A;
   box-shadow: 0 0 0 4px rgba(224, 83, 138, .13);
 }

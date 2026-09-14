@@ -15,7 +15,7 @@
 // 설정은 config.js(window.APP_CONFIG)에서 가져온다. 미로드 시 안전 기본값 사용.
 const CONFIG = window.APP_CONFIG || {
   SHEET_API_URL: '',
-  CLASSES: ['A', 'B', 'C']
+  CLASSES: ['A', 'C']
 };
 
 (function () {
@@ -80,7 +80,6 @@ const CONFIG = window.APP_CONFIG || {
 
     const required = [
       ['teamName', '팀명을 입력한다'],
-      ['idea', '아이디어를 입력한다'],
       ['m1id', '팀원 1의 학번을 입력한다'],
       ['m1name', '팀원 1의 이름을 입력한다'],
       ['m2id', '팀원 2의 학번을 입력한다'],

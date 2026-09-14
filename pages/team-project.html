@@ -58,7 +58,7 @@
           <span class="grad grad--live">팀 현황</span>
         </h1>
         <p class="hero-lead reveal" data-reveal-delay="160">
-          A·B·C반 팀 구성과 프로젝트 아이디어를 등록하고,<br>
+          A·C반 팀 구성과 프로젝트 아이디어를 등록하고,<br>
           프로젝트 결과물과 산출물 링크, 팀별 현황을 한 화면에서 관리한다.
         </p>
         <div class="hero-actions reveal" data-reveal-delay="240">
@@ -81,7 +81,7 @@
   <section class="statbar" aria-label="팀 운영 요약">
     <div class="shell statbar-inner">
       <div class="stat reveal" data-reveal-delay="0">
-        <p class="stat-key">A·B·C반</p>
+        <p class="stat-key">A·C반</p>
         <p class="stat-val">분반별 팀 현황 관리</p>
       </div>
       <div class="stat reveal" data-reveal-delay="60">
@@ -123,7 +123,6 @@
             <span class="field-label">분반 <em class="req">필수</em></span>
             <div class="radio-chips" role="radiogroup" aria-label="분반 선택">
               <label class="radio-chip"><input type="radio" name="cls" value="A" checked><span>A반</span></label>
-              <label class="radio-chip"><input type="radio" name="cls" value="B"><span>B반</span></label>
               <label class="radio-chip"><input type="radio" name="cls" value="C"><span>C반</span></label>
             </div>
           </div>
@@ -134,8 +133,8 @@
           </div>
 
           <div class="field field--wide">
-            <label class="field-label" for="idea">아이디어 <em class="req">필수</em></label>
-            <input type="text" id="idea" placeholder="한 문장으로 정리한 프로젝트 아이디어" maxlength="120" autocomplete="off">
+            <label class="field-label" for="idea">아이디어 <em class="opt">선택</em></label>
+            <input type="text" id="idea" placeholder="한 문장으로 정리한 프로젝트 아이디어(7주차에 확정하여 입력)" maxlength="120" autocomplete="off">
           </div>
         </div>
 
@@ -213,7 +212,6 @@
 
         <div class="chips chips--light reveal" data-reveal-delay="120" role="group" aria-label="분반 탭">
           <button type="button" class="chip is-active" data-class="A">A반</button>
-          <button type="button" class="chip" data-class="B">B반</button>
           <button type="button" class="chip" data-class="C">C반</button>
         </div>
       </div>
