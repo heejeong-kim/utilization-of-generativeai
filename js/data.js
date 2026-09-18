@@ -93,7 +93,7 @@ const WEEKS = [
       '실현 가능성과 주요 위험을 검토한다'
     ],
     tags: ['기획 검증', '실현 가능성', '위험 검토'],
-    thumb: '7.png', link: ''
+    thumb: '7.png', link: 'pages/lecture-week07.html'
   },
   {
     no: 8, week: 'WEEK 08', type: 'eval', badge: '평가',
@@ -103,7 +103,7 @@ const WEEKS = [
       '객관식·주관식 필기시험을 진행한다'
     ],
     tags: ['중간고사', '필기시험'],
-    thumb: '8.png', link: ''
+    thumb: '8.png', link: 'pages/lecture-week08.html'
   },
   {
     no: 9, week: 'WEEK 09', type: 'class', badge: '수업',
