@@ -208,7 +208,18 @@
         </div>
       </div>
 
-      <div class="team-grid" id="teamGrid">
+      <div class="team-access" id="teamAccess">
+        <form class="team-access-form" id="teamAccessForm">
+          <label for="teamAccessPassword">등록된 팀 목록 비밀번호</label>
+          <div class="team-access-row">
+            <input type="password" id="teamAccessPassword" autocomplete="off" required>
+            <button type="submit" class="btn btn-mint">확인</button>
+          </div>
+          <p class="team-access-error" id="teamAccessError" role="alert" hidden>비밀번호가 맞지 않는다.</p>
+        </form>
+      </div>
+
+      <div class="team-grid" id="teamGrid" hidden>
         <!-- 구글 시트에 실제 등록된 팀을 js/main.js 가 불러와 렌더링한다 -->
       </div>
 
