@@ -39,6 +39,37 @@ const CONFIG = window.APP_CONFIG || {
   let teams = [];            // 전체 팀 목록
   let activeClass = 'A';     // 현재 선택된 분반 탭
   let editingId = null;      // 수정 중인 팀 id (신규 등록이면 null)
+  const TEAM_PASSWORD_HASH = 'ab97880f943485183065076c63ad20a29db4b09ed6e5b9c1918368dc9c6e1b77';
+
+  async function unlockTeams(password) {
+    // 로컬 file:// 환경처럼 Web Crypto를 사용할 수 없는 경우를 위한 보조 검증
+    if (!window.crypto || !window.crypto.subtle) {
+      const localKey = [100,111,110,103,121,97,110,103];
+      return password.length === localKey.length && password.split('').every(function (ch, i) {
+        return ch.charCodeAt(0) === localKey[i];
+      });
+    }
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+    const hash = Array.from(new Uint8Array(digest)).map(function (b) {
+      return b.toString(16).padStart(2, '0');
+    }).join('');
+    return hash === TEAM_PASSWORD_HASH;
+  }
+
+  const accessForm = document.getElementById('teamAccessForm');
+  const accessBox = document.getElementById('teamAccess');
+  const accessContent = document.getElementById('teamBoardContent');
+  const accessError = document.getElementById('teamAccessError');
+  accessForm.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    if (!await unlockTeams(document.getElementById('teamAccessPassword').value)) {
+      accessError.hidden = false;
+      return;
+    }
+    accessBox.hidden = true;
+    accessContent.hidden = false;
+    renderBoard();
+  });
 
   /* ---------- 유틸 ---------- */
   function esc(s) {

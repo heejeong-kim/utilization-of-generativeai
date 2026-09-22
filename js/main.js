@@ -32,6 +32,30 @@
   const SHEET_API_URL = APP_CONFIG.SHEET_API_URL || '';
 
   let teams = [];
+  const TEAM_PASSWORD_HASH = 'ab97880f943485183065076c63ad20a29db4b09ed6e5b9c1918368dc9c6e1b77';
+
+  async function unlockTeams(password) {
+    const bytes = new TextEncoder().encode(password);
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    const hash = Array.from(new Uint8Array(digest)).map(function (b) {
+      return b.toString(16).padStart(2, '0');
+    }).join('');
+    return hash === TEAM_PASSWORD_HASH;
+  }
+
+  const accessForm = document.getElementById('teamAccessForm');
+  const accessBox = document.getElementById('teamAccess');
+  const accessError = document.getElementById('teamAccessError');
+  if (accessForm) {
+    accessForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const ok = await unlockTeams(document.getElementById('teamAccessPassword').value);
+      if (!ok) { accessError.hidden = false; return; }
+      accessBox.hidden = true;
+      teamGrid.hidden = false;
+      renderTeams();
+    });
+  }
 
   function esc(str) {
     return String(str).replace(/[&<>"']/g, function (ch) {
