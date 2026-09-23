@@ -39,36 +39,61 @@ const CONFIG = window.APP_CONFIG || {
   let teams = [];            // 전체 팀 목록
   let activeClass = 'A';     // 현재 선택된 분반 탭
   let editingId = null;      // 수정 중인 팀 id (신규 등록이면 null)
-  const TEAM_PASSWORD_HASH = 'ab97880f943485183065076c63ad20a29db4b09ed6e5b9c1918368dc9c6e1b77';
+  let teamPassword = '';     // 확인된 비밀번호 (메모리에만 보관, 서버 요청 시 함께 전송)
 
-  async function unlockTeams(password) {
-    // 로컬 file:// 환경처럼 Web Crypto를 사용할 수 없는 경우를 위한 보조 검증
-    if (!window.crypto || !window.crypto.subtle) {
-      const localKey = [100,111,110,103,121,97,110,103];
-      return password.length === localKey.length && password.split('').every(function (ch, i) {
-        return ch.charCodeAt(0) === localKey[i];
-      });
-    }
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
-    const hash = Array.from(new Uint8Array(digest)).map(function (b) {
-      return b.toString(16).padStart(2, '0');
-    }).join('');
-    return hash === TEAM_PASSWORD_HASH;
+  /* ---------- 비밀번호 확인 ----------
+     비밀번호는 브라우저 코드에 두지 않고 Apps Script 서버에서 검증한다.
+     서버가 비밀번호를 확인한 경우에만 팀 목록 데이터를 돌려준다. */
+  function requestList(password) {
+    return fetch(CONFIG.SHEET_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'list', password: password })
+    }).then(function (res) { return res.json(); });
   }
 
   const accessForm = document.getElementById('teamAccessForm');
   const accessBox = document.getElementById('teamAccess');
   const accessContent = document.getElementById('teamBoardContent');
   const accessError = document.getElementById('teamAccessError');
-  accessForm.addEventListener('submit', async function (event) {
-    event.preventDefault();
-    if (!await unlockTeams(document.getElementById('teamAccessPassword').value)) {
-      accessError.hidden = false;
-      return;
-    }
+  const accessBtn = accessForm.querySelector('button[type="submit"]');
+
+  function openBoard() {
     accessBox.hidden = true;
     accessContent.hidden = false;
     renderBoard();
+  }
+
+  function showAccessError(message) {
+    accessError.textContent = message;
+    accessError.hidden = false;
+  }
+
+  accessForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const password = document.getElementById('teamAccessPassword').value;
+    accessError.hidden = true;
+
+    // 구글 시트 미연동(로컬 확인) 모드에서는 임시 목록만 보여준다
+    if (!apiEnabled()) { openBoard(); return; }
+
+    accessBtn.disabled = true;
+    requestList(password)
+      .then(function (json) {
+        if (json && json.ok) {
+          teamPassword = password;
+          teams = Array.isArray(json.teams) ? json.teams : [];
+          openBoard();
+        } else if (json && json.error === 'locked') {
+          showAccessError('비밀번호 오류가 많아 잠시 잠겼다. 10분 후 다시 시도한다.');
+        } else {
+          showAccessError('비밀번호가 맞지 않는다.');
+        }
+      })
+      .catch(function () {
+        showAccessError('서버에 연결하지 못했다. 잠시 후 다시 시도한다.');
+      })
+      .then(function () { accessBtn.disabled = false; });
   });
 
   /* ---------- 유틸 ---------- */
@@ -224,11 +249,14 @@ const CONFIG = window.APP_CONFIG || {
       renderBoard();
       return;
     }
+    // 비밀번호 확인 전에는 서버에 목록을 요청하지 않는다
+    if (!teamPassword) return;
 
-    fetch(CONFIG.SHEET_API_URL + '?action=list', { method: 'GET' })
-      .then(function (res) { return res.json(); })
+    requestList(teamPassword)
       .then(function (json) {
-        teams = Array.isArray(json.teams) ? json.teams : [];
+        if (json && json.ok) {
+          teams = Array.isArray(json.teams) ? json.teams : [];
+        }
         renderBoard();
       })
       .catch(function () {
@@ -261,7 +289,7 @@ const CONFIG = window.APP_CONFIG || {
     fetch(CONFIG.SHEET_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'save', team: data })
+      body: JSON.stringify({ action: 'save', team: data, password: teamPassword })
     })
       .then(function (res) { return res.json(); })
       .then(function (json) {
@@ -269,6 +297,8 @@ const CONFIG = window.APP_CONFIG || {
           notify('저장했다.', 'ok');
           resetForm();
           loadTeams();
+        } else if (json && json.error === 'unauthorized') {
+          notify('기존 팀 정보 수정은 팀 목록 비밀번호 확인 후 가능하다.', 'error');
         } else {
           notify('저장에 실패했다. 입력값을 확인하고 다시 시도한다.', 'error');
         }

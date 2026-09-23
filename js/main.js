@@ -32,28 +32,46 @@
   const SHEET_API_URL = APP_CONFIG.SHEET_API_URL || '';
 
   let teams = [];
-  const TEAM_PASSWORD_HASH = 'ab97880f943485183065076c63ad20a29db4b09ed6e5b9c1918368dc9c6e1b77';
-
-  async function unlockTeams(password) {
-    const bytes = new TextEncoder().encode(password);
-    const digest = await crypto.subtle.digest('SHA-256', bytes);
-    const hash = Array.from(new Uint8Array(digest)).map(function (b) {
-      return b.toString(16).padStart(2, '0');
-    }).join('');
-    return hash === TEAM_PASSWORD_HASH;
+  // 팀 목록 비밀번호는 브라우저가 아니라 Apps Script 서버에서 검증한다
+  function requestTeams(password) {
+    return fetch(SHEET_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'list', password: password })
+    }).then(function (res) { return res.json(); });
   }
 
   const accessForm = document.getElementById('teamAccessForm');
   const accessBox = document.getElementById('teamAccess');
   const accessError = document.getElementById('teamAccessError');
   if (accessForm) {
-    accessForm.addEventListener('submit', async function (event) {
+    const accessBtn = accessForm.querySelector('button[type="submit"]');
+    accessForm.addEventListener('submit', function (event) {
       event.preventDefault();
-      const ok = await unlockTeams(document.getElementById('teamAccessPassword').value);
-      if (!ok) { accessError.hidden = false; return; }
-      accessBox.hidden = true;
-      teamGrid.hidden = false;
-      renderTeams();
+      accessError.hidden = true;
+      if (!SHEET_API_URL) { accessBox.hidden = true; teamGrid.hidden = false; renderTeams(); return; }
+
+      accessBtn.disabled = true;
+      requestTeams(document.getElementById('teamAccessPassword').value)
+        .then(function (json) {
+          if (!json || !json.ok) {
+            accessError.textContent = (json && json.error === 'locked')
+              ? '비밀번호 오류가 많아 잠시 잠겼다. 10분 후 다시 시도한다.'
+              : '비밀번호가 맞지 않는다.';
+            accessError.hidden = false;
+            return;
+          }
+          const rows = Array.isArray(json.teams) ? json.teams : [];
+          teams = rows.filter(function (t) { return t && t.teamName; }).map(mapSheetTeam);
+          accessBox.hidden = true;
+          teamGrid.hidden = false;
+          renderTeams();
+        })
+        .catch(function () {
+          accessError.textContent = '서버에 연결하지 못했다. 잠시 후 다시 시도한다.';
+          accessError.hidden = false;
+        })
+        .then(function () { accessBtn.disabled = false; });
     });
   }
 
@@ -179,22 +197,10 @@
     };
   }
 
+  // 비밀번호 확인 전에는 서버에 목록을 요청하지 않고 빈 상태로 둔다
   function loadTeamsFromSheet() {
-    if (!SHEET_API_URL) { renderTeams(); return; }
-
-    fetch(SHEET_API_URL + '?action=list', { method: 'GET' })
-      .then(function (res) { return res.json(); })
-      .then(function (json) {
-        const rows = (json && Array.isArray(json.teams)) ? json.teams : [];
-        teams = rows
-          .filter(function (t) { return t && t.teamName; })
-          .map(mapSheetTeam);
-        renderTeams();
-      })
-      .catch(function () {
-        teams = [];
-        renderTeams();
-      });
+    teams = [];
+    renderTeams();
   }
 
   function renderTeams() {
@@ -203,7 +209,8 @@
     });
 
     teamGrid.innerHTML = list.map(teamTemplate).join('');
-    teamEmpty.hidden = list.length !== 0;
+    // 비밀번호 확인 전(목록 숨김 상태)에는 빈 상태 문구도 숨긴다
+    teamEmpty.hidden = teamGrid.hidden || list.length !== 0;
 
     Array.from(teamGrid.children).forEach(function (card, i) {
       observe(card, Math.min(i, 7) * 50);
