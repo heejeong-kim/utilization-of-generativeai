@@ -1,4 +1,4 @@
-/* backtop.js wrapper: preserve original shared behavior and open Week 04/05/06 navigation */
+/* backtop.js wrapper: preserve original shared behavior and open published week navigation */
 (function () {
   'use strict';
 
@@ -46,11 +46,26 @@
     }
   }
 
+  // 공개된 주차 목록 — 새 주차 공개 시 여기 한 줄만 추가하면 모든 페이지 드롭다운에 반영됨
+  var OPEN_WEEKS = [
+    ['04주차 · ', 'lecture-week04.html'],
+    ['05주차 · ', 'lecture-week05.html'],
+    ['06주차 · ', 'lecture-week06.html'],
+    ['07주차 · ', 'lecture-week07.html'],
+    ['08주차 · ', 'lecture-week08.html']
+  ];
+
   function enableWeekNavigation() {
     var select = document.getElementById('weekSelect');
-    setOpenOption(select, '04주차 · 프로젝트 유형 탐색과 AI 아이데이션', 'lecture-week04.html');
-    setOpenOption(select, '05주차 · 나만의 AI 비서 설계', 'lecture-week05.html');
-    setOpenOption(select, '06주차 · 멀티모달 AI와 프로젝트 활용', 'lecture-week06.html');
+    OPEN_WEEKS.forEach(function (w) { setOpenOption(select, w[0], w[1]); });
+    // 페이지 자체 change 핸들러가 없는 경우에도 이동되도록 보강
+    if (select && !select.getAttribute('data-nav-bound')) {
+      select.setAttribute('data-nav-bound', 'true');
+      select.addEventListener('change', function (e) {
+        var v = e.target.value;
+        if (v && /\.html$/.test(v) && location.pathname.indexOf(v) === -1) location.href = v;
+      });
+    }
     setLectureNavigation();
   }
 
