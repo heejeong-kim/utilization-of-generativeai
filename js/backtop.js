@@ -52,7 +52,8 @@
     ['05주차 · ', 'lecture-week05.html'],
     ['06주차 · ', 'lecture-week06.html'],
     ['07주차 · ', 'lecture-week07.html'],
-    ['08주차 · ', 'lecture-week08.html']
+    ['08주차 · ', 'lecture-week08.html'],
+    ['09주차 · ', 'lecture-week09.html']
   ];
 
   function enableWeekNavigation() {

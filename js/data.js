@@ -113,7 +113,7 @@ const WEEKS = [
       'PRD와 구현 계획을 작성한다'
     ],
     tags: ['MVP', 'PRD', '기능 우선순위'],
-    thumb: '9.png', link: ''
+    thumb: '9.png', link: 'pages/lecture-week09.html'
   },
   {
     no: 10, week: 'WEEK 10', type: 'demo', badge: '발표',
