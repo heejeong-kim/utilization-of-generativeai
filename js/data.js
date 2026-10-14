@@ -113,7 +113,7 @@ const WEEKS = [
       'PRD와 구현 계획을 작성한다'
     ],
     tags: ['MVP', 'PRD', '기능 우선순위'],
-    thumb: '9.png', link: ''
+    thumb: '9.png', link: 'pages/lecture-week09.html'
   },
   {
     no: 10, week: 'WEEK 10', type: 'demo', badge: '발표',
@@ -123,57 +123,57 @@ const WEEKS = [
       '피드백으로 개선 과제와 계획을 조정한다'
     ],
     tags: ['중간 발표', '피드백', '실행계획'],
-    thumb: '10.png', link: ''
+    thumb: '10.png', link: 'pages/lecture-week10.html'
   },
   {
     no: 11, week: 'WEEK 11', type: 'class', badge: '수업',
     title: 'AI 기반 슬라이드 제작과 발표 자동화',
     summary: [
-      'AI로 발표 구조와 핵심 메시지를 만든다',
-      '슬라이드와 발표 대본을 자동화한다'
+      '10주차 MVP의 부족한 기능을 채우고 고도화한다',
+      'AI로 최종 프로젝트 보고 슬라이드를 만든다'
     ],
-    tags: ['슬라이드 제작', '발표 대본', 'Gamma'],
-    thumb: '11.png', link: ''
+    tags: ['기능 보완', 'PRD 업데이트', '슬라이드 제작'],
+    thumb: '11.png', link: 'pages/lecture-week11.html'
   },
   {
     no: 12, week: 'WEEK 12', type: 'class', badge: '수업',
     title: '사용자 테스트와 프로젝트 개선',
     summary: [
       '사용자 테스트로 기능과 품질을 검증한다',
-      '개선 요구를 우선순위로 정리한다'
+      '개선 내용을 재확인하고 PRD 버전을 올린다'
     ],
-    tags: ['사용자 테스트', '품질 평가', '개선 백로그'],
-    thumb: '12.png', link: ''
+    tags: ['사용자 테스트', '품질 평가', 'PRD 버전업'],
+    thumb: '12.png', link: 'pages/lecture-week12.html'
   },
   {
     no: 13, week: 'WEEK 13', type: 'class', badge: '수업',
     title: '최종 구현 점검과 발표 준비',
     summary: [
-      'QA로 기능·콘텐츠·사용 흐름을 점검한다',
-      '발표자료와 시연 시나리오를 완성한다'
+      '최종 QA로 시연 범위를 확정하고 결함을 정리한다',
+      '11주차 보고 슬라이드 초안을 최종본으로 마무리한다'
     ],
     tags: ['QA 체크리스트', 'AI 윤리', '리허설'],
-    thumb: '13.png', link: ''
+    thumb: '13.png', link: 'pages/lecture-week13.html'
   },
   {
     no: 14, week: 'WEEK 14', type: 'demo', badge: '발표',
     title: '최종 프로젝트 발표',
     summary: [
       '최종 결과물과 핵심 기능을 시연한다',
-      '질의응답과 평가로 프로젝트를 정리한다'
+      '4주차부터의 과정 전체를 팀별로 발표하고 평가한다'
     ],
-    tags: ['최종 발표', '시연', '프로젝트 보고서'],
-    thumb: '14.png', link: ''
+    tags: ['팀별 최종 발표', '시연', '동료평가'],
+    thumb: '14.png', link: 'pages/lecture-week14.html'
   },
   {
     no: 15, week: 'WEEK 15', type: 'eval', badge: '평가',
     title: '기말고사: 최종 평가와 프로젝트 회고',
     summary: [
-      '강의 핵심 내용을 기말시험으로 평가한다',
-      '최종 산출물을 기준으로 팀 성적을 처리한다'
+      '7~14주차 핵심 내용을 기말고사로 평가한다',
+      '주차별 학습 가이드로 시험을 준비한다'
     ],
-    tags: ['기말고사', '회고', '팀 성적'],
-    thumb: '15.png', link: ''
+    tags: ['기말고사', '학습 가이드', '7~14주차'],
+    thumb: '15.png', link: 'pages/lecture-week15.html'
   }
 ];
 

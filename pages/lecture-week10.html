@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>WEEK 10 · 프로젝트 중간 발표와 피드백 | 생성형 AI 활용 2026-2</title>
+<style>
+body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f7f8fc;color:#111}
+.gate{min-height:100vh;display:grid;place-items:center;padding:24px 16px;box-sizing:border-box}
+.card{width:min(440px,100%);background:#fff;border-radius:22px;padding:32px 24px;box-shadow:0 24px 70px rgba(25,30,60,.12);text-align:center;box-sizing:border-box}
+.icon{font-size:30px}.title{font-size:20px;font-weight:700;margin:10px 0 6px}.desc{color:#667085;line-height:1.6;margin:0 0 18px}
+form{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+input{flex:1 1 180px;max-width:240px;border:1px solid #cfd4e6;border-radius:999px;padding:11px 16px;font:inherit}
+button{border:0;border-radius:999px;background:#5266e8;color:#fff;padding:11px 20px;font:inherit;font-weight:700;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}.err{color:#c4320a;font-size:14px;margin:12px 0 0}
+.back{display:inline-block;margin-top:18px;color:#667085;font-size:14px}
+</style>
+</head>
+<body>
+<main class="gate"><section class="card">
+<div class="icon">🔒</div>
+<h1 class="title">10주차 강의교안</h1>
+<p class="desc">수업 시간에 안내한 비밀번호를 입력하면 강의교안을 열람할 수 있습니다.</p>
+<form id="gateForm"><input id="gatePw" type="password" autocomplete="off" placeholder="비밀번호" aria-label="비밀번호" required><button type="submit">열람하기</button></form>
+<p class="err" id="gateErr" hidden>비밀번호가 올바르지 않습니다.</p>
+<a class="back" href="../index.html">← 전체 주차 목록</a>
+</section></main>
+<script src="week10-full.enc.js?v=mv7vdddg"></script>
+<script>
+(()=>{'use strict';
+  // 비밀번호는 저장하지 않고, 입력값으로 암호문을 복호화함(AES-GCM + PBKDF2)
+  const enc=new TextEncoder(),dec=new TextDecoder();
+  const b64=s=>{const b=atob(s),o=new Uint8Array(b.length);for(let i=0;i<b.length;i++)o[i]=b.charCodeAt(i);return o};
+  async function gunzip(bytes){const st=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));return dec.decode(await new Response(st).arrayBuffer())}
+  async function decrypt(pw,p){
+    const m=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']);
+    const k=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(p.salt),iterations:p.iterations,hash:'SHA-256'},m,{name:'AES-GCM',length:256},false,['decrypt']);
+    return gunzip(new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(p.iv)},k,b64(p.data))));
+  }
+  const f=document.getElementById('gateForm'),inp=document.getElementById('gatePw'),err=document.getElementById('gateErr'),btn=f.querySelector('button');
+  f.addEventListener('submit',async e=>{
+    e.preventDefault();err.hidden=true;btn.disabled=true;btn.textContent='확인 중';
+    try{
+      const p=window.LECTURE_FULL_PAYLOAD;if(!p)throw new Error('load');
+      const html=await decrypt(inp.value,p);
+      document.open();document.write(html);document.close();
+    }catch(_){err.hidden=false;inp.value='';inp.focus();btn.disabled=false;btn.textContent='열람하기'}
+  });
+  inp.focus();
+})();
+</script>
+</body></html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>캠퍼스 공강 플래너 · HTML 와이어프레임</title>
+<!--
+  10주차 [실습] 2. HTML 와이어프레임 샘플
+  - 9주차 IA(S-01·S-02·S-03)와 사용자 프로세스를 기준으로 화면 뼈대만 배치함
+  - 색·이미지 없이 회색 톤으로 "무엇이 어디에 있는지"만 표시함
+  - 이 파일을 그대로 이어서 [실습] 3. 프로토타입(화면 이동), [실습] 4. 최소 기능 구현으로 발전시킴
+-->
+<style>
+  /* ===== 와이어프레임 공통 토큰: 회색 톤만 사용 ===== */
+  :root{
+    --bg:#f2f2f2; --paper:#fff; --line:#9a9a9a; --line-soft:#cfcfcf;
+    --ink:#222; --ink-sub:#666; --fill:#e6e6e6; --fill-dark:#bdbdbd;
+    --note:#fff7c2; --note-line:#d9c75a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
+  h1,h2,h3,p{margin:0}
+  button,input,select{font:inherit}
+
+  /* ===== 문서 머리말 ===== */
+  .doc-head{max-width:1280px;margin:0 auto;padding:28px 16px 8px}
+  .doc-head h1{font-size:22px}
+  .doc-head p{color:var(--ink-sub);margin-top:6px}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px;font-size:13px;color:var(--ink-sub)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:14px;height:14px;border:1px solid var(--line);display:inline-block}
+  .sw--note{background:var(--note);border-color:var(--note-line)}
+  .sw--state{border-style:dashed}
+
+  /* ===== 화면 보드: 화면 ID별 프레임을 나란히 배치 ===== */
+  .board{max-width:1280px;margin:0 auto;padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px;align-items:start}
+  .screen{background:var(--paper);border:2px solid var(--ink);border-radius:6px;overflow:hidden}
+  .screen-id{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--ink);color:#fff;font-size:13px}
+  .screen-id b{font-family:ui-monospace,Menlo,monospace;letter-spacing:.04em}
+  .screen-body{padding:16px;display:grid;gap:14px}
+
+  /* 앱 상단 바(모든 화면 공통) */
+  .appbar{display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--line-soft);font-weight:700}
+  .appbar .logo{width:22px;height:22px;border:1px solid var(--line);background:var(--fill)}
+
+  /* ===== 입력 영역 ===== */
+  .field{display:grid;gap:4px}
+  .field label{font-size:13px;color:var(--ink-sub)}
+  .field .box{height:38px;border:1px solid var(--line);border-radius:4px;background:var(--paper);display:flex;align-items:center;padding:0 10px;color:var(--ink-sub)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px}
+  .chip--on{background:var(--fill-dark)}
+
+  /* ===== 버튼 ===== */
+  .btn{display:block;width:100%;height:42px;border:2px solid var(--ink);border-radius:4px;background:var(--fill-dark);font-weight:700;cursor:default}
+  .btn--ghost{background:var(--paper);border-width:1px}
+  .btn--sm{display:inline-block;width:auto;height:30px;padding:0 10px;font-size:13px;white-space:nowrap;flex:none}
+
+  /* ===== 결과 영역(계획 카드·상세) ===== */
+  .summary{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:4px;background:var(--fill);font-size:13px}
+  .card{border:1px solid var(--line);border-radius:4px;padding:12px;display:grid;gap:8px}
+  .card-head{display:flex;justify-content:space-between;font-weight:700}
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:13px;text-align:center}
+  .metrics div{border:1px dashed var(--line-soft);padding:6px 4px}
+  .metrics small{display:block;color:var(--ink-sub)}
+  .line-ph{height:10px;background:var(--fill);border-radius:2px}
+  .line-ph--short{width:60%}
+  .badge{font-size:12px;border:1px solid var(--line);padding:2px 8px;border-radius:999px;color:var(--ink-sub)}
+  .timeline{list-style:none;margin:0;padding:0;border-left:2px solid var(--line);display:grid;gap:10px}
+  .timeline li{position:relative;padding-left:14px;font-size:14px}
+  .timeline li::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;border:2px solid var(--ink);background:var(--paper);border-radius:50%}
+  .timeline time{font-family:ui-monospace,Menlo,monospace;margin-right:6px}
+  .meta{font-size:12px;color:var(--ink-sub)}
+
+  /* ===== 상태 영역(처리 중·오류·결과 없음·완료): 점선 박스로 구분 ===== */
+  .state{border:2px dashed var(--line);border-radius:6px;padding:12px;display:grid;gap:8px;background:#fafafa}
+  .state-tag{justify-self:start;font-size:12px;font-weight:700;background:var(--ink);color:#fff;padding:2px 8px;border-radius:3px}
+  .spinner{width:28px;height:28px;border:3px solid var(--fill-dark);border-top-color:var(--ink);border-radius:50%}
+  .err{font-size:13px;border-left:3px solid var(--ink);padding-left:8px}
+
+  /* ===== 설계 메모(포스트잇): 실제 화면에는 들어가지 않음 ===== */
+  .note{background:var(--note);border:1px solid var(--note-line);border-radius:4px;padding:8px 10px;font-size:12.5px;color:#5a4d00}
+  .note ol{margin:4px 0 0;padding-left:18px}
+
+  /* ===== 흐름 요약표 ===== */
+  .flow{max-width:1280px;margin:0 auto;padding:8px 16px 40px}
+  .flow h2{font-size:17px;margin:8px 0 10px}
+  .flow-wrap{overflow-x:auto;background:var(--paper);border:1px solid var(--line-soft)}
+  table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+  th,td{border-bottom:1px solid var(--line-soft);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--fill)}
+</style>
+</head>
+<body>
+
+<header class="doc-head">
+  <h1>캠퍼스 공강 플래너 · HTML 와이어프레임 (ver0.5 작업본)</h1>
+  <p>9주차 IA·사용자 프로세스 기준 화면 뼈대 — 화면 이동과 실제 기능은 다음 단계(프로토타입·최소 기능 구현)에서 이 파일에 추가함</p>
+  <div class="legend">
+    <span><i class="sw"></i>화면 요소</span>
+    <span><i class="sw sw--state"></i>상태 영역(처리 중·오류·결과 없음·완료)</span>
+    <span><i class="sw sw--note"></i>설계 메모(실제 화면에는 넣지 않음)</span>
+  </div>
+</header>
+
+<main class="board">
+
+  <!-- ==================== S-01 공강 조건 입력 ==================== -->
+  <section class="screen" id="S-01" aria-labelledby="t-s01">
+    <div class="screen-id"><b>S-01</b><span id="t-s01">공강 조건 입력</span></div>
+    <div class="screen-body">
+      <div class="appbar"><i class="logo"></i>캠퍼스 공강 플래너</div>
+
+      <div class="row2">
+        <div class="field"><label>공강 시작</label><div class="box">12:00</div></div>
+        <div class="field"><label>공강 종료</label><div class="box">13:30</div></div>
+      </div>
+      <div class="field"><label>출발 위치</label><div class="box">강의동 A ▾</div></div>
+      <div class="field"><label>다음 수업 위치</label><div class="box">강의동 A ▾</div></div>
+      <div class="field">
+        <label>활동 목적 (복수 선택)</label>
+        <div class="chips"><span class="chip chip--on">공부</span><span class="chip chip--on">식사</span><span class="chip">휴식</span></div>
+      </div>
+      <div class="field"><label>예산(원)</label><div class="box">8,000</div></div>
+
+      <button class="btn" type="button">추천받기</button>
+
+      <!-- 예외 상태: 입력 오류는 별도 화면이 아니라 같은 화면에 표시 -->
+      <div class="state" aria-label="입력 오류 상태">
+        <span class="state-tag">상태 · 입력 오류</span>
+        <p class="err">공강 종료 시간을 입력해 주세요</p>
+        <p class="err">종료 시간이 시작 시간보다 빨라요</p>
+      </div>
+
+      <div class="note"><b>설계 메모</b>
+        <ol>
+          <li>출발·다음 수업 위치는 목록에서 선택(직접 입력 없음)</li>
+          <li>활동 목적은 공부·식사·휴식 3가지로 제한</li>
+          <li>오류 문구는 해당 입력칸 바로 아래에 표시</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== S-02 추천 계획 비교 ==================== -->
+  <section class="screen" id="S-02" aria-labelledby="t-s02">
+    <div class="screen-id"><b>S-02</b><span id="t-s02">추천 계획 비교</span></div>
+    <div class="screen-body">
+      <div class="appbar"><i class="logo"></i>추천 계획</div>
+
+      <div class="summary"><span>12:00–13:30 · 강의동 A · 공부+식사 · 8,000원</span><button class="btn btn--ghost btn--sm" type="button">✎ 조건 수정</button></div>
+
+      <!-- 계획 카드: 최대 3개, 총시간·비용·활동을 같은 위치에 배치 -->
+      <article class="card">
+        <div class="card-head"><span>계획 A</span><span class="badge">추천</span></div>
+        <div class="metrics">
+          <div><small>총시간</small>80분</div><div><small>비용</small>7,000원</div><div><small>활동</small>식사+공부</div>
+        </div>
+        <div class="line-ph"></div><div class="line-ph line-ph--short"></div>
+        <button class="btn btn--ghost btn--sm" type="button">상세보기</button>
+      </article>
+      <article class="card">
+        <div class="card-head"><span>계획 B</span></div>
+        <div class="metrics"><div><small>총시간</small>—</div><div><small>비용</small>—</div><div><small>활동</small>—</div></div>
+        <div class="line-ph line-ph--short"></div>
+        <button class="btn btn--ghost btn--sm" type="button">상세보기</button>
+      </article>
+      <article class="card">
+        <div class="card-head"><span>계획 C</span></div>
+        <div class="metrics"><div><small>총시간</small>—</div><div><small>비용</small>—</div><div><small>활동</small>—</div></div>
+        <div class="line-ph line-ph--short"></div>
+        <button class="btn btn--ghost btn--sm" type="button">상세보기</button>
+      </article>
+      <p class="meta">※ 가상 데이터 예시</p>
+
+      <!-- 상태 영역 3종: 같은 화면 안에서 결과 목록 대신 표시 -->
+      <div class="state" aria-label="처리 중 상태">
+        <span class="state-tag">상태 · 처리 중</span>
+        <div class="spinner" aria-hidden="true"></div>
+        <p>조건에 맞는 계획을 만드는 중이에요</p>
+      </div>
+      <div class="state" aria-label="추천 없음 상태">
+        <span class="state-tag">상태 · 추천 없음</span>
+        <p>조건에 맞는 계획이 없어요</p>
+        <p class="meta">이유: 예산이 부족해요 → 예산을 늘리거나 목적을 줄여 보세요</p>
+        <button class="btn btn--ghost btn--sm" type="button">조건 수정</button>
+      </div>
+      <div class="state" aria-label="AI 응답 실패 상태">
+        <span class="state-tag">상태 · AI 응답 실패</span>
+        <p>추천을 불러오지 못했어요. 입력한 조건은 그대로 있어요</p>
+        <button class="btn btn--ghost btn--sm" type="button">다시 시도</button>
+      </div>
+
+      <div class="note"><b>설계 메모</b>
+        <ol>
+          <li>조건 수정 → S-01로 이동, 기존 입력값 유지</li>
+          <li>추천 없음·실패 안내가 결과처럼 보이지 않게 카드와 다른 형태로 표시</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== S-03 계획 상세·선택 ==================== -->
+  <section class="screen" id="S-03" aria-labelledby="t-s03">
+    <div class="screen-id"><b>S-03</b><span id="t-s03">계획 상세·선택</span></div>
+    <div class="screen-body">
+      <div class="appbar"><i class="logo"></i>← 계획 A 상세</div>
+
+      <div class="metrics">
+        <div><small>총시간</small>80분</div><div><small>비용</small>7,000원</div><div><small>도착 여유</small>10분</div>
+      </div>
+
+      <h3 style="font-size:14px">활동 시간표</h3>
+      <ol class="timeline">
+        <li><time>12:00</time>강의동 A 출발</li>
+        <li><time>12:05</time>학생식당 B · 식사 25분</li>
+        <li><time>12:35</time>학습실 C · 공부 30분</li>
+        <li><time>13:10</time>강의동 A 도착</li>
+      </ol>
+
+      <h3 style="font-size:14px">추천 이유</h3>
+      <div class="line-ph"></div><div class="line-ph line-ph--short"></div>
+
+      <p class="meta">출처·확인일: 학교 시설 안내 · YYYY-MM-DD (가상 데이터)</p>
+
+      <button class="btn" type="button">이 계획 선택</button>
+
+      <div class="state" aria-label="선택 완료 상태">
+        <span class="state-tag">상태 · 선택 완료</span>
+        <p>계획 A를 선택했어요 · 13:10 강의동 A 도착 예정</p>
+        <button class="btn btn--ghost btn--sm" type="button">처음으로</button>
+      </div>
+
+      <div class="note"><b>설계 메모</b>
+        <ol>
+          <li>이동시간은 추정치임을 함께 표시</li>
+          <li>추천 이유(AI)와 조건 검사 결과(규칙)를 구분해 표시할지 검토</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ==================== 화면 이동 요약(실습 2 작성표와 동일 항목) ==================== -->
+<section class="flow">
+  <h2>화면 구성과 이동</h2>
+  <div class="flow-wrap">
+    <table>
+      <thead><tr><th>화면 ID</th><th>화면명</th><th>주요 요소</th><th>이동 버튼 → 다음 화면</th><th>예외 상태</th></tr></thead>
+      <tbody>
+        <tr><td>S-01</td><td>공강 조건 입력</td><td>시간·위치·목적·예산 입력칸</td><td>추천받기 → S-02</td><td>필수 항목 누락·시간 오류 안내</td></tr>
+        <tr><td>S-02</td><td>추천 계획 비교</td><td>조건 요약, 계획 카드 최대 3개</td><td>상세보기 → S-03 / 조건 수정 → S-01</td><td>처리 중·추천 없음·AI 응답 실패</td></tr>
+        <tr><td>S-03</td><td>계획 상세·선택</td><td>활동 시간표, 추천 이유, 출처·확인일</td><td>이 계획 선택 → 선택 완료</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</body>
+</html>

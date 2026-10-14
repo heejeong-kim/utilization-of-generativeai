@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>공강 플래너</title>
+<!--
+  10주차 샘플 — 캠퍼스 공강 플래너 (프로토타입 → 고도화 작업본)
+  - 학교 공간 정보: 10week_data/school.json (건물·공간·운영시간·출처·확인일)
+  - 다른 사람 공강 플래닝: 10week_data/shared-plans.json (예시) + 이 기기에서 공유한 플래닝(localStorage)
+  - 추천: school.json 의 공간·운영시간·추정 이동시간·예산으로 규칙 기반 계획을 계산함 (AI 설명 연결 전)
+  - 파일을 더블클릭해 열면(file://) 브라우저 보안 때문에 JSON을 못 읽으므로 아래 내장 사본을 대신 사용함
+  - 실패 화면 확인용: 주소 뒤에 ?fail 을 붙이면 첫 추천이 'AI 응답 실패'로 표시됨
+-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --brand:#0E7C66; --brand-600:#0A6654; --brand-050:#E6F3EE; --brand-100:#CBE7DC;
+    --mint:#1A9E7A; --mint-050:#E3F4EC; --amber:#EE8A3C; --amber-050:#FDF0E3; --rose:#E5484D; --rose-050:#FFF0F0;
+    --ink:#1B231F; --ink-2:#4A544F; --ink-3:#868E89; --line:#E8E4DA; --bg:#F6F4EE; --card:#fff;
+    --r-lg:20px; --r-md:14px; --shadow:0 6px 24px rgba(45,52,35,.08);
+    --wrap:430px; /* 모바일 전용 폭 */
+  }
+  *{box-sizing:border-box}
+  html{background:#E4DFD3}
+  html,body{margin:0}
+  body{max-width:var(--wrap);margin:0 auto;box-shadow:0 0 0 1px var(--line);font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;min-height:100vh}
+  h1,h2,h3,p{margin:0}
+  button,input,select{font:inherit;color:inherit}
+  button{cursor:pointer}
+  a{color:var(--brand)}
+  :focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+  [hidden]{display:none!important}
+
+  /* ===== 상단 바 ===== */
+  .appbar{position:sticky;top:0;z-index:4;background:rgba(246,244,238,.92);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+  .appbar-in{height:60px;display:flex;align-items:center;gap:10px;padding:0 16px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;letter-spacing:-.02em;background:none;border:0;padding:0}
+  .brand i{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#2FB38F);display:grid;place-items:center;color:#fff;font-style:normal;font-size:15px}
+  .school-chip{margin-left:auto;font-size:12px;font-weight:700;color:var(--ink-2);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 10px}
+  .icon-btn{width:40px;height:40px;border-radius:12px;border:0;background:var(--card);display:grid;place-items:center;box-shadow:0 1px 0 var(--line);font-size:18px}
+  .appbar h1{font-size:17px;font-weight:700}
+
+  main{padding:12px 16px 0}
+  .page-title{font-size:22px;letter-spacing:-.02em;margin:6px 0 10px}
+  .screen{display:none;animation:in .3s cubic-bezier(.2,.8,.2,1)}
+  .screen.is-active{display:block}
+  @keyframes in{from{opacity:0;transform:translateY(8px)}}
+  @media (prefers-reduced-motion:reduce){.screen{animation:none}}
+  .bottom{position:sticky;bottom:0;padding:16px 0 calc(20px + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--bg) 72%,rgba(246,244,238,0));margin-top:8px;z-index:2}
+
+  /* ===== 공통 ===== */
+  .card{background:var(--card);border-radius:var(--r-lg);padding:18px;box-shadow:var(--shadow)}
+  .label{font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:8px;display:block}
+  .cta{width:100%;height:56px;border:0;border-radius:16px;background:var(--brand);color:#fff;font-size:16px;font-weight:700;box-shadow:0 10px 24px rgba(14,124,102,.3);transition:background .15s,transform .1s}
+  .cta:hover{background:var(--brand-600)}
+  .cta:active{transform:scale(.99)}
+  .cta--sub{background:var(--card);color:var(--brand);box-shadow:none;border:1.5px solid var(--brand-100);height:50px}
+  .cta--sub:hover{background:var(--brand-050)}
+  .ghost{height:48px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--card);font-weight:600;font-size:15px}
+  .tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap}
+  .tag--brand{background:var(--brand-050);color:var(--brand)}
+  .tag--hot{background:#FFE9DA;color:#B4501B}
+  .tag--gray{background:#EFEBE2;color:var(--ink-2)}
+  .tag--mint{background:var(--mint-050);color:#0B6B52}
+  .tag--amber{background:var(--amber-050);color:#9A4F12}
+  .tag--rose{background:var(--rose-050);color:#B4232A}
+
+  /* ===== 메인: 추천 영역 ===== */
+  .hello{padding:14px 0 16px}
+  .hello p{color:var(--ink-3);font-size:14px}
+  .hello h2{font-size:26px;line-height:1.35;margin-top:4px;letter-spacing:-.02em}
+  .stack{display:grid;gap:14px}
+  .time-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+  .time-row .arrow{color:var(--ink-3)}
+  .tbox{display:grid;gap:2px}
+  .tbox small{font-size:12px;color:var(--ink-3)}
+  .tbox input{border:0;padding:0;font-size:21px;font-weight:700;background:none;width:100%;min-width:0}
+  .gap-chip{margin-top:12px;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--brand-050);border-radius:12px;font-size:14px;color:var(--brand);font-weight:600}
+  .sel{position:relative}
+  .sel select{appearance:none;-webkit-appearance:none;width:100%;height:50px;border:1px solid var(--line);border-radius:14px;background:#FAF8F3;padding:0 36px 0 42px;font-size:15px;font-weight:600}
+  .sel .ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:17px;pointer-events:none}
+  .sel::after{content:"";position:absolute;right:16px;top:50%;width:8px;height:8px;border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+  .purpose{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .pchip{height:76px;border:1.5px solid var(--line);border-radius:16px;background:#FAF8F3;display:grid;place-items:center;align-content:center;gap:4px;font-weight:600;font-size:14px;transition:all .15s}
+  .pchip span{font-size:22px}
+  .pchip[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-050);color:var(--brand)}
+  .budget-top{display:flex;justify-content:space-between;align-items:baseline}
+  .budget-top b{font-size:22px}
+  input[type=range]{width:100%;accent-color:var(--brand);margin-top:10px}
+  .range-scale{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3)}
+  .err{display:none;margin-top:8px;font-size:13px;color:var(--rose);font-weight:600}
+  .has-error .err{display:block}
+  .has-error.card{box-shadow:0 0 0 2px var(--rose),var(--shadow)}
+  .home-cta{margin:16px 0 4px}
+
+  /* ===== 하단 탭바 (홈 · 공간 · 플래닝) ===== */
+  .tabbar{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:var(--wrap);z-index:6;display:grid;grid-template-columns:repeat(3,1fr);background:rgba(255,253,248,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:6px 8px calc(8px + env(safe-area-inset-bottom))}
+  .tabbar button{border:0;background:none;display:grid;justify-items:center;gap:2px;padding:6px 0;font-size:11.5px;font-weight:700;color:var(--ink-3);border-radius:12px}
+  .tabbar button span{font-size:21px;filter:grayscale(1);opacity:.6;transition:all .15s}
+  .tabbar button[aria-current="page"]{color:var(--brand)}
+  .tabbar button[aria-current="page"] span{filter:none;opacity:1}
+  body.has-tabbar main{padding-bottom:84px}
+  body.has-tabbar .bottom{bottom:72px}
+  .panel{padding:4px 0 24px}
+  .panel-head{display:flex;justify-content:space-between;align-items:baseline;margin:10px 0 12px}
+  .panel-head h3{font-size:22px;letter-spacing:-.02em}
+  .panel-head small{color:var(--ink-3);font-size:12px}
+  .filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none}
+  .filter{flex:none;height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13px;font-weight:600}
+  .filter[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .space{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--card);border:0;border-radius:16px;padding:14px;margin-bottom:8px;box-shadow:0 2px 10px rgba(45,52,35,.05)}
+  .space .ic{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:var(--brand-050)}
+  .space .tx{flex:1;min-width:0}
+  .space .tx b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .space .tx small{color:var(--ink-3);font-size:13px}
+  .space .st{flex:none}
+  .data-note{font-size:12px;color:var(--ink-3);line-height:1.6;margin-top:8px}
+  .feed{display:block;width:100%;text-align:left;background:var(--card);border:0;border-radius:16px;padding:14px 16px;margin-bottom:10px;box-shadow:0 2px 10px rgba(45,52,35,.05)}
+  .seg{display:grid;grid-template-columns:1fr 1fr;background:#EFEBE2;border-radius:14px;padding:4px;margin:4px 0 14px}
+  .seg button{height:40px;border:0;border-radius:11px;background:none;font-weight:700;font-size:14px;color:var(--ink-3)}
+  .seg button[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(45,52,35,.12)}
+  .feed-empty{text-align:center;padding:36px 16px;color:var(--ink-2);font-size:14px;line-height:1.7}
+  .feed-empty b{display:block;font-size:16px;color:var(--ink);margin:8px 0 4px}
+  .feed-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .feed-who{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+  .avatar{width:30px;height:30px;border-radius:50%;background:var(--brand-100);display:grid;place-items:center;font-size:13px;color:var(--brand);font-weight:800}
+  .feed-meta{font-size:12px;color:var(--ink-3)}
+  .feed-route{margin:10px 0 6px;font-size:14px;font-weight:600;line-height:1.5}
+  .feed-memo{font-size:13px;color:var(--ink-2)}
+
+  /* ===== 추천 결과 ===== */
+  .cond{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}
+  .plan{display:block;background:var(--card);border-radius:var(--r-lg);padding:16px;box-shadow:var(--shadow);margin-bottom:12px;border:2px solid transparent;text-align:left;width:100%;transition:border-color .15s,transform .15s}
+  .plan:hover{border-color:var(--brand-100);transform:translateY(-1px)}
+  .plan-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .plan-head h3{font-size:16px;line-height:1.4}
+  .plan-stats{display:flex;gap:14px;margin:10px 0 12px;font-size:14px;color:var(--ink-2)}
+  .plan-stats b{color:var(--ink);font-size:16px}
+  .bar{display:flex;height:10px;border-radius:999px;overflow:hidden;background:#EFEBE2}
+  .bar i{display:block;height:100%}
+  .seg-move{background:#D6CFBF}.seg-식사{background:var(--amber)}.seg-공부{background:#3D6FD8}.seg-휴식{background:#8CCB9F}.seg-편의{background:#A06CD5}.seg-buffer{background:#E6E1D5}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:var(--ink-3)}
+  .legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;background:var(--c)}
+  .plan-reason{display:block;margin-top:10px;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+  .plan-flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .plan-more{display:block;margin-top:10px;font-size:13px;font-weight:700;color:var(--brand)}
+  .sample-note{text-align:center;font-size:12px;color:var(--ink-3);margin:6px 0 20px;line-height:1.6}
+  .skel{background:var(--card);border-radius:var(--r-lg);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+  .skel i{display:block;height:12px;border-radius:6px;background:linear-gradient(90deg,#EFEBE2 0%,#F3F0E8 50%,#EFEBE2 100%);background-size:200% 100%;animation:sh 1.2s infinite;margin-bottom:10px}
+  @keyframes sh{to{background-position:-200% 0}}
+  .loading-msg{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2);margin-bottom:12px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--brand);animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.25}}
+  .empty{text-align:center;padding:40px 20px}
+  .empty .em{font-size:44px}
+  .empty h3{font-size:18px;margin:10px 0 6px}
+  .empty p{color:var(--ink-2);font-size:14px;line-height:1.6}
+  .empty .fix{margin:18px auto 0;display:grid;gap:8px;max-width:280px}
+
+  /* ===== 상세 ===== */
+  .hero{background:linear-gradient(135deg,#0E7C66,#16A383);color:#fff;border-radius:var(--r-lg);padding:20px;box-shadow:0 14px 30px rgba(14,124,102,.28);margin-top:6px}
+  .hero h2{font-size:20px;margin-top:8px;line-height:1.4}
+  .hero .tag{background:rgba(255,255,255,.18);color:#fff}
+  .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:16px;gap:8px}
+  .hero-stats div{background:rgba(255,255,255,.14);border-radius:12px;padding:10px;text-align:center}
+  .hero-stats small{display:block;font-size:12px;opacity:.85}
+  .hero-stats b{font-size:17px}
+  .sec-title{font-size:15px;font-weight:700;margin:24px 0 10px}
+  .tl{list-style:none;margin:0;padding:16px;background:var(--card);border-radius:var(--r-lg);box-shadow:var(--shadow)}
+  .tl > li{display:grid;grid-template-columns:48px 28px 1fr;gap:10px;align-items:start;position:relative;padding-bottom:16px}
+  .tl > li:last-child{padding-bottom:0}
+  .tl > li:not(:last-child)::after{content:"";position:absolute;left:71px;top:30px;bottom:2px;width:2px;background:var(--line)}
+  .tl time{font-weight:700;font-size:14px;padding-top:4px}
+  .tl .pin{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:14px;background:var(--brand-050)}
+  .tl .what b{display:block;font-size:15px}
+  .tl .what small{color:var(--ink-3);font-size:13px}
+  .tl .what button{margin-top:4px;border:0;background:none;padding:0;color:var(--brand);font-size:12.5px;font-weight:700}
+  .tip{margin-top:8px;background:#EEF6F2;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.55;color:var(--ink-2)}
+  .tip b{display:block;font-size:12.5px;color:var(--brand);margin-bottom:2px}
+  .tip ul{margin:0;padding-left:16px}
+  .tip li{margin:2px 0}
+  .plan-tip{display:block;margin-top:10px;font-size:13px;color:var(--ink-2);background:#EEF6F2;border-radius:10px;padding:8px 10px;line-height:1.5}
+  .sheet-tips{margin:4px 0 0;padding-left:18px;font-size:14px;line-height:1.7;color:var(--ink-2)}
+  .ai-box{background:var(--card);border-radius:var(--r-md);padding:14px 16px;border-left:4px solid var(--brand);box-shadow:var(--shadow);font-size:14px;line-height:1.6;color:var(--ink-2)}
+  .ai-box small{display:block;margin-top:6px;color:var(--ink-3);font-size:12px}
+  .checks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .checks li{display:flex;align-items:center;gap:8px;font-size:14px;background:var(--card);border-radius:12px;padding:10px 12px}
+  .checks li::before{content:"✓";flex:none;width:20px;height:20px;border-radius:50%;background:var(--mint-050);color:#0B6B52;display:grid;place-items:center;font-weight:800;font-size:12px}
+  .checks li.warn::before{content:"!";background:var(--amber-050);color:#9A4F12}
+  .source{font-size:12px;color:var(--ink-3);margin-top:14px;line-height:1.6}
+
+  /* ===== 시트 · 토스트 ===== */
+  .sheet-wrap{position:fixed;inset:0;background:rgba(20,28,24,.45);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;z-index:10}
+  .sheet-wrap.open{opacity:1;pointer-events:auto}
+  .sheet{width:100%;max-width:var(--wrap);max-height:88vh;overflow-y:auto;background:var(--card);border-radius:26px 26px 0 0;padding:26px 22px calc(24px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+  .sheet-wrap.open .sheet{transform:none}
+  .grab{width:40px;height:4px;border-radius:2px;background:#DAD4C6;margin:-12px auto 16px}
+  .center{text-align:center}
+  .check{width:64px;height:64px;margin:0 auto 12px;border-radius:50%;background:var(--mint);display:grid;place-items:center;color:#fff;font-size:30px;font-weight:800}
+  .sheet h3{font-size:20px}
+  .sheet p.lead{color:var(--ink-2);margin:6px 0 18px;font-size:15px;line-height:1.6}
+  .share-box{background:#F3F0E8;border-radius:16px;padding:14px;text-align:left;display:grid;gap:10px;margin-bottom:14px}
+  .share-box b{font-size:14px}
+  .share-box input{height:46px;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:#fff;width:100%}
+  .share-box small{font-size:12px;color:var(--ink-3);line-height:1.5}
+  .btn-row{display:grid;gap:8px}
+  .info-rows{display:grid;gap:0;margin:14px 0}
+  .info-rows div{display:grid;grid-template-columns:84px 1fr;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .info-rows dt{color:var(--ink-3)}
+  .info-rows dd{margin:0;font-weight:600;line-height:1.5;white-space:pre-line}
+  .toast{position:fixed;left:50%;bottom:110px;transform:translate(-50%,20px);background:#1B231F;color:#fff;font-size:14px;padding:10px 16px;border-radius:12px;opacity:0;transition:all .25s;z-index:11;white-space:nowrap;pointer-events:none}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body class="has-tabbar">
+
+<header class="appbar">
+  <div class="appbar-in">
+    <button class="icon-btn" type="button" id="backBtn" aria-label="이전 화면" hidden>←</button>
+    <button class="brand" type="button" id="brand" aria-label="처음 화면으로"><i>공</i>공강 플래너</button>
+    
+    <span class="school-chip" id="schoolChip">학교 정보 불러오는 중</span>
+  </div>
+</header>
+
+<main>
+  <!-- ==================== 메인 ==================== -->
+  <section class="screen is-active" id="home" data-title="공강 플래너" data-tab="1">
+    <!-- 상단: 공강 조건 입력 → 추천받기 -->
+    <form id="form" novalidate>
+      <div class="hello"><p id="helloSchool">캠퍼스 공강 플래너</p><h2>이번 공강,<br>어떻게 보낼까요?</h2></div>
+      <div class="stack">
+        <div class="card" id="f-time">
+          <span class="label">공강 시간</span>
+          <div class="time-row">
+            <label class="tbox"><small>공강 시작</small><input id="start" type="time" value="12:00"></label>
+            <span class="arrow">→</span>
+            <label class="tbox"><small>공강 종료</small><input id="end" type="time" value="13:30"></label>
+          </div>
+          <div class="gap-chip"><span>사용할 수 있는 시간</span><span id="gapText">90분</span></div>
+          <p class="err" id="timeErr"></p>
+        </div>
+        <div class="card stack">
+          <div><label class="label" for="from">출발 위치</label>
+            <div class="sel"><span class="ico">📍</span><select id="from"></select></div></div>
+          <div><label class="label" for="to">다음 수업 위치</label>
+            <div class="sel"><span class="ico">🏫</span><select id="to"></select></div></div>
+        </div>
+        <div class="card" id="f-purpose">
+          <span class="label">하고 싶은 활동 (복수 선택)</span>
+          <div class="purpose">
+            <button type="button" class="pchip" aria-pressed="true" data-p="식사"><span>🍚</span>식사</button>
+            <button type="button" class="pchip" aria-pressed="true" data-p="공부"><span>📚</span>공부</button>
+            <button type="button" class="pchip" aria-pressed="false" data-p="휴식"><span>☕</span>휴식</button>
+            <button type="button" class="pchip" aria-pressed="false" data-p="편의"><span>🛒</span>편의</button>
+          </div>
+          <p class="err">활동을 1개 이상 선택해 주세요</p>
+        </div>
+        <div class="card">
+          <div class="budget-top"><label class="label" for="budget" style="margin:0">예산</label><b id="budgetText">8,000원</b></div>
+          <input id="budget" type="range" min="0" max="15000" step="500" value="8000">
+          <div class="range-scale"><span>0원</span><span>15,000원</span></div>
+        </div>
+      </div>
+      <div class="bottom"><button class="cta" type="submit">추천받기</button></div>
+    </form>
+
+  </section>
+
+
+  <!-- ==================== 우리 학교 공간 ==================== -->
+  <section class="screen" id="spaces" data-title="우리 학교 공간" data-tab="1">
+    <div class="panel" id="panel-space">
+      <div class="panel-head"><h3>공강에 갈 수 있는 곳</h3><small id="nowText"></small></div>
+      <div class="filters" id="spaceFilters">
+        <button class="filter" type="button" aria-pressed="true" data-cat="전체">전체</button>
+        <button class="filter" type="button" aria-pressed="false" data-cat="식사">🍚 식사</button>
+        <button class="filter" type="button" aria-pressed="false" data-cat="공부">📚 공부</button>
+        <button class="filter" type="button" aria-pressed="false" data-cat="휴식">☕ 휴식</button>
+        <button class="filter" type="button" aria-pressed="false" data-cat="편의">🛒 편의</button>
+      </div>
+      <div id="spaceList"></div>
+      <p class="data-note" id="dataNote"></p>
+    </div>
+  </section>
+
+  <!-- ==================== 다른 사람 공강 플래닝 ==================== -->
+  <section class="screen" id="feed" data-title="공강 플래닝" data-tab="1">
+    <div class="panel" id="panel-feed">
+      <div class="panel-head"><h3>공강 플래닝</h3><small id="feedCount"></small></div>
+      <div class="seg" role="tablist">
+        <button type="button" role="tab" id="seg-mine" aria-selected="true">내 플래닝</button>
+        <button type="button" role="tab" id="seg-others" aria-selected="false">다른 사람 플래닝</button>
+      </div>
+      <div id="feedList"></div>
+      <p class="data-note" id="feedNote"></p>
+    </div>
+  </section>
+
+  <!-- ==================== 추천 계획 비교 ==================== -->
+  <section class="screen" id="result" data-title="추천 계획">
+    <h2 class="page-title">추천 계획</h2>
+    <div class="cond" id="cond"></div>
+    <div id="loading">
+      <div class="loading-msg"><span class="dot"></span>학교 공간 정보로 계획을 만드는 중이에요</div>
+      <div class="skel"><i style="width:40%"></i><i style="width:70%"></i><i></i></div>
+      <div class="skel"><i style="width:35%"></i><i style="width:60%"></i><i></i></div>
+    </div>
+    <div id="list" hidden></div>
+    <p class="sample-note" id="resultNote" hidden>운영시간은 관리자가 입력한 정보로 변경될 수 있어요<br>가격·이동시간은 추정치예요<br>💡 장소별 추천 활동은 예시예요</p>
+    <div class="empty" id="empty" hidden>
+      <div class="em">🙅</div>
+      <h3>조건에 맞는 계획이 없어요</h3>
+      <p id="emptyWhy"></p>
+      <div class="fix"><button class="cta" type="button" data-go="home">조건 수정하기</button></div>
+    </div>
+    <div class="empty" id="fail" hidden>
+      <div class="em">⚠️</div>
+      <h3>추천을 불러오지 못했어요</h3>
+      <p>입력한 조건은 그대로 있어요.<br>잠시 후 다시 시도해 주세요</p>
+      <div class="fix"><button class="cta" type="button" id="retry">다시 시도</button><button class="ghost" type="button" data-go="home">조건 수정</button></div>
+    </div>
+  </section>
+
+  <!-- ==================== 계획 상세 (추천 계획 · 다른 사람 플래닝 공용) ==================== -->
+  <section class="screen" id="detail" data-title="계획 상세">
+    <h2 class="page-title" id="detailTitle">계획 상세</h2>
+    <div class="hero">
+      <span class="tag" id="dTag"></span>
+      <h2 id="dTitle"></h2>
+      <div class="hero-stats" id="dStats"></div>
+    </div>
+    <h3 class="sec-title">활동 시간표</h3>
+    <ol class="tl" id="dTl"></ol>
+    <h3 class="sec-title" id="dReasonTitle">추천 이유</h3>
+    <div class="ai-box" id="dReason"></div>
+    <div id="dCheckWrap">
+      <h3 class="sec-title">조건 확인</h3>
+      <ul class="checks" id="dChecks"></ul>
+    </div>
+    <p class="source" id="dSource"></p>
+    <div class="bottom">
+      <button class="cta" type="button" id="choose">이 계획으로 할게요</button>
+      <button class="cta cta--sub" type="button" id="useShared" hidden>이 플래닝 조건으로 추천받기</button>
+      <button class="ghost" type="button" id="delMine" hidden style="width:100%;margin-top:8px">내 플래닝에서 삭제</button>
+    </div>
+  </section>
+</main>
+
+<!-- 하단 탭바 -->
+<nav class="tabbar" id="tabbar" aria-label="메뉴">
+  <button type="button" data-tab="home" aria-current="page"><span>🏠</span>홈</button>
+  <button type="button" data-tab="spaces"><span>🏫</span>공간</button>
+  <button type="button" data-tab="feed"><span>👀</span>플래닝</button>
+</nav>
+
+<!-- 선택 완료 + 공유 -->
+<div class="sheet-wrap" id="doneSheet" aria-hidden="true">
+  <div class="sheet center" role="dialog" aria-modal="true" aria-labelledby="doneTitle">
+    <div class="grab"></div>
+    <div class="check">✓</div>
+    <h3 id="doneTitle">내 플래닝에 저장했어요</h3>
+    <p class="lead" id="doneText"></p>
+    <div class="share-box">
+      <b>다른 학생들에게 이 플래닝을 공유할까요?</b>
+      <input id="nick" maxlength="12" placeholder="닉네임 (예: 컴공 1학년)" aria-label="닉네임">
+      <input id="memo" maxlength="40" placeholder="한 줄 메모 (선택)" aria-label="한 줄 메모">
+      <small>실명·학번은 적지 마세요. 공유한 플래닝은 서버를 연결하면 다른 학생의 '다른 사람 플래닝'에 보여요 (지금은 이 기기에만 저장)</small>
+    </div>
+    <div class="btn-row">
+      <button class="cta" type="button" id="shareBtn">공유하기</button>
+      <button class="ghost" type="button" id="restart">공유 없이 내 플래닝 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 실제 학교 정보 보기 -->
+<div class="sheet-wrap" id="spaceSheet" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="spTitle">
+    <div class="grab"></div>
+    <span class="tag" id="spBadge"></span>
+    <h3 id="spTitle" style="margin-top:8px"></h3>
+    <dl class="info-rows" id="spRows"></dl>
+    <p class="source" id="spSource"></p>
+    <div class="btn-row" style="margin-top:16px"><button class="ghost" type="button" data-close>닫기</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<!-- 내장 사본: file:// 로 열었을 때 fetch 대신 사용 (원본: 10week_data/*.json) -->
+<script type="application/json" id="data-school">{"meta": {"school": "동양미래대학교", "campus": "서울 구로구 경인로 445", "checkedAt": "2026-10-07", "note": "위치는 공식 안내·비공식 자료를 함께 정리함. 운영시간은 관리자가 직접 입력한 정보이며 학기·방학·학교 사정에 따라 변경될 수 있음. 가격·이동시간은 추정치", "travelNote": "건물 간 이동시간은 실측 전 추정치임", "tipNote": "장소별 추천 활동은 예시이며, AI를 연결하면 사용자의 목적과 남은 시간에 맞춰 생성함", "hoursNote": "운영시간은 관리자 입력 정보이며 변경될 수 있어요"}, "buildings": [{"id": "B1", "name": "1호관", "use": "대학본부·교양수업"}, {"id": "B2", "name": "2호관", "use": "경영학부"}, {"id": "B3", "name": "3호관", "use": "전기전자통신·컴퓨터공학부"}, {"id": "B4", "name": "4호관", "use": "기계·로봇자동화공학부"}, {"id": "B5", "name": "5호관", "use": "바이오융합공학과"}, {"id": "B6", "name": "6호관", "use": "실내건축·시각디자인·교양"}, {"id": "B7", "name": "7호관", "use": "건축 관련 학과"}, {"id": "B8", "name": "8호관", "use": "소방안전관리·콘텐츠학과·편의시설"}, {"id": "LIB", "name": "도서관", "use": "도서관·열람실"}], "travelMinutes": {"default": 5, "sameBuilding": 2, "pairs": [["B6", "B8", 3], ["B6", "B7", 2], ["B1", "B2", 4], ["LIB", "B1", 4], ["LIB", "B8", 6], ["B3", "B8", 5]]}, "spaces": [{"id": "food8", "name": "동양미래푸드(학생식당)", "building": "B8", "floor": "3층", "category": "식사", "activity": "식사", "hours": {"weekday": [["11:00", "14:00"], ["16:30", "18:00"]], "weekend": null, "text": "점심 11:00–14:00 · 저녁 16:30–18:00", "closed": "주말·공휴일 휴무, 방학 중 중식만 운영", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 25, "cost": 6000, "costNote": "가격 예시(확인 필요)", "source": {"name": "동양미래대학교 공식 캠퍼스 안내", "url": "https://www.dongyang.ac.kr/dongyang/249/subview.do", "official": true}, "tips": ["오늘 메뉴를 미리 확인하고 가기", "식사 후 같은 건물 2층 서점·1층 CU에서 필요한 것 함께 사기"]}, {"id": "subway8", "name": "서브웨이", "building": "B8", "floor": "1층", "category": "식사", "activity": "식사", "hours": {"weekday": [["08:30", "19:00"]], "weekend": null, "text": "평일 08:30–19:00", "closed": "주말·공휴일 휴무", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 20, "cost": 7500, "costNote": "가격 예시(확인 필요)", "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["메뉴를 미리 정해 두면 주문 대기 시간이 줄어요", "포장해서 공부·휴식 장소로 가져가도 좋아요"]}, {"id": "jeju8", "name": "제주몰빵", "building": "B8", "floor": "2층", "category": "식사", "activity": "식사", "hours": {"weekday": [["08:30", "18:00"]], "weekend": null, "text": "평일 08:30–18:00", "closed": "주말·공휴일 휴무", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 15, "cost": 4500, "costNote": "가격 예시(확인 필요)", "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["빵·음료로 가볍게 먹고 공부 장소로 이동하기", "남는 시간은 다음 수업 자료 미리 보기"]}, {"id": "cu8", "name": "CU 편의점", "building": "B8", "floor": "1층", "category": "편의", "activity": "식사", "hours": {"weekday": [["08:00", "21:00"]], "weekend": [["10:00", "16:00"]], "text": "평일 08:00–21:00 · 주말 10:00–16:00", "closed": "공휴일 단축 운영", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 15, "cost": 3500, "costNote": "가격 예시(확인 필요)", "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "alsoFor": ["편의"], "tips": ["삼각김밥·샌드위치로 빠르게 끼니 해결하기", "생수·필기구 등 다음 수업 준비물 미리 사기"]}, {"id": "book8", "name": "서점·모닝글로리", "building": "B8", "floor": "2층", "category": "편의", "activity": "편의", "hours": {"weekday": [["09:30", "17:30"]], "weekend": null, "text": "평일 09:30–17:30", "closed": "주말·공휴일 휴무", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "duration": 10, "cost": 0, "tips": ["전공 교재·참고서 재고 확인하기", "노트·필기구 등 학기 중 필요한 문구 채우기"]}, {"id": "cafe1", "name": "1호관 1층 카페", "building": "B1", "floor": "1층", "category": "휴식", "activity": "휴식", "hours": {"weekday": [["08:30", "18:00"]], "weekend": null, "text": "평일 08:30–18:00", "closed": "주말·공휴일 휴무", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 20, "cost": 3500, "costNote": "음료 가격 예시(확인 필요)", "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["음료 한 잔과 함께 다음 수업 자료 훑어보기", "팀원과 10~15분 짧은 팀플 회의하기"]}, {"id": "lounge1", "name": "1호관 층별 휴게공간", "building": "B1", "floor": "각 층", "category": "휴식", "activity": "휴식", "hours": {"weekday": [["08:00", "22:00"]], "weekend": [["09:00", "18:00"]], "text": "평일 08:00–22:00 · 주말 09:00–18:00 (건물 개방 시간)", "closed": "—", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 15, "cost": 0, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["눈 감고 쉬거나 가볍게 스트레칭하기", "다음 수업 강의실 근처에서 여유 있게 대기하기"]}, {"id": "view2", "name": "안양천 전망공간", "building": "B2", "floor": "7층", "category": "휴식", "activity": "휴식", "hours": {"weekday": [["09:00", "18:00"]], "weekend": null, "text": "평일 09:00–18:00", "closed": "주말·공휴일 미개방", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 15, "cost": 0, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["안양천 전망 보며 눈 쉬기", "오전 수업 내용을 머릿속으로 정리하며 쉬기"]}, {"id": "plaza", "name": "하이테크 플라자 잔디광장", "building": "B1", "floor": "야외", "category": "휴식", "activity": "휴식", "hours": {"weekday": [["07:00", "22:00"]], "weekend": [["07:00", "22:00"]], "text": "매일 07:00–22:00 (야외)", "closed": "우천 시 이용 어려움", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 15, "cost": 0, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["날씨 좋은 날 잔디광장 한 바퀴 산책하기", "햇볕 쬐며 가볍게 스트레칭하기"]}, {"id": "libcafe", "name": "도서관 스터디카페", "building": "LIB", "floor": "1층", "category": "공부", "activity": "공부", "hours": {"weekday": [["09:00", "21:00"]], "weekend": [["09:00", "18:00"]], "text": "평일 09:00–21:00 · 주말 1층만 18:00까지", "enteredBy": "관리자", "updatedAt": "2026-10-07", "closed": "주말 일부 층만 운영"}, "duration": 20, "cost": 0, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["노트북으로 과제·팀플 자료 정리하기", "대화가 필요한 공부는 열람실 대신 이곳에서"]}, {"id": "libroom", "name": "도서관 스터디룸·미래나래 온빛마루", "building": "LIB", "floor": "4층", "category": "공부", "activity": "공부", "hours": {"weekday": [["09:00", "21:00"]], "weekend": null, "text": "평일 09:00–21:00", "enteredBy": "관리자", "updatedAt": "2026-10-07", "closed": "주말·공휴일 휴무"}, "duration": 20, "cost": 0, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["스터디룸에서 팀 프로젝트 회의하기", "조별 과제 역할 나누고 일정 정하기"]}, {"id": "libread", "name": "도서관 열람실", "building": "LIB", "floor": "6층", "category": "공부", "activity": "공부", "hours": {"weekday": [["09:00", "21:00"]], "weekend": null, "text": "평일 09:00–21:00", "enteredBy": "관리자", "updatedAt": "2026-10-07", "closed": "주말·공휴일 휴무"}, "duration": 20, "cost": 0, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["조용히 개인 공부·시험 준비하기", "25분 집중 + 5분 휴식으로 한 단원 끝내기"]}, {"id": "tutor5", "name": "전공튜터링 카페", "building": "B5", "floor": "—", "category": "공부", "activity": "공부", "hours": {"weekday": [["10:00", "17:00"]], "weekend": null, "text": "평일 10:00–17:00", "closed": "주말·공휴일·방학 휴무", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 20, "cost": 0, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["전공 튜터링 전에 질문 거리 정리하기", "막힌 문제를 튜터에게 바로 물어보기"]}, {"id": "gym6", "name": "휘트니스센터", "building": "B6", "floor": "지하3층", "category": "편의", "activity": null, "hours": {"weekday": [["09:00", "20:00"]], "weekend": null, "text": "평일 09:00–20:00", "closed": "주말·공휴일 휴무", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}}]}</script>
+<script type="application/json" id="data-shared">{"note": "수업 시연용 예시 데이터임. 실제 공유는 서버(예: Google Sheets·Apps Script) 연결 후 동작함", "plans": [{"id": "s1", "nickname": "컴공 1학년", "date": "2026-10-06", "start": "12:00", "end": "13:30", "purposes": ["식사", "공부"], "steps": [["food8", 25], ["libread", 35]], "memo": "학식 먹고 열람실에서 과제 마무리"}, {"id": "s2", "nickname": "경영 2학년", "date": "2026-10-06", "start": "10:30", "end": "11:30", "purposes": ["휴식"], "steps": [["view2", 40]], "memo": "2호관 7층 전망 보면서 쉬기 좋아요"}, {"id": "s3", "nickname": "시디 1학년", "date": "2026-10-05", "start": "13:00", "end": "14:30", "purposes": ["식사", "휴식"], "steps": [["subway8", 20], ["cafe1", 40]], "memo": "서브웨이 → 1호관 카페"}, {"id": "s4", "nickname": "로봇 2학년", "date": "2026-10-05", "start": "15:00", "end": "16:00", "purposes": ["공부"], "steps": [["libcafe", 45]], "memo": "스터디카페에서 시험 공부"}]}</script>
+
+<script>
+(() => {
+  'use strict';
+
+  const $ = s => document.querySelector(s);
+  const won = n => n.toLocaleString('ko-KR') + '원';
+  const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+  const fmt = m => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  const ICON = { 식사:'🍚', 공부:'📚', 휴식:'☕', 편의:'🛒' };
+  const VERB = { 식사:'식사', 공부:'공부', 휴식:'휴식', 편의:'들르기' };
+  const doing = s => s.activity === '편의' ? `${s.name} 들르기` : `${s.name}에서 ${VERB[s.activity]}`;
+  const FIXED = ['식사', '편의'];   // 시간이 정해진 활동 (공부·휴식은 남는 시간만큼 늘림)
+  const LS_KEY = 'gongplan-mine-v1';        // 내 플래닝(선택한 계획) 저장
+  const LS_OLD = 'gongplan-shared-v1';      // 이전 버전(공유만 저장) → 내 플래닝으로 옮김
+
+  const st = { school:null, shared:[], plans:[], plan:null, ready:false, failOnce:new URLSearchParams(location.search).has('fail') };
+
+  // ===== 1. JSON 불러오기: fetch → 실패 시 내장 사본 =====
+  async function loadJSON(path, inlineId) {
+    try {
+      const r = await fetch(path, { cache:'no-store' });
+      if (!r.ok) throw new Error(r.status);
+      return await r.json();
+    } catch (_) {
+      return JSON.parse(document.getElementById(inlineId).textContent);
+    }
+  }
+  const building = id => st.school.buildings.find(b => b.id === id);
+  const space = id => st.school.spaces.find(s => s.id === id);
+  const where = s => `${building(s.building).name} ${s.floor}`;
+
+  // ===== 장소에서 무엇을 하면 좋을지 (시간 길이별 제안 + 장소별 팁) =====
+  function durationTip(act, d) {
+    if (act === '공부') return d <= 20 ? '오늘 수업 필기를 한 번 훑어보기' : d <= 40 ? '다음 수업 예습이나 과제 한 부분 끝내기' : '과제·시험 공부 한 단원 집중하기 (25분 공부 + 5분 휴식)';
+    if (act === '휴식') return d <= 15 ? '눈 감고 쉬거나 스트레칭으로 몸 풀기' : '음료와 함께 쉬면서 친구와 이야기하기';
+    if (act === '식사') return d <= 15 ? '간단히 먹고 남는 시간을 다음 활동에 쓰기' : '서두르지 말고 천천히 식사하기';
+    if (act === '편의') return '다음 수업에 필요한 준비물 미리 챙기기';
+    return '';
+  }
+  const tipsFor = (s, act, d) => [durationTip(act, d), ...(s.tips || [])].filter(Boolean).slice(0, 3);
+
+  // ===== 2. 운영시간·이동시간 계산 =====
+  const dayType = () => { const d = new Date().getDay(); return (d === 0 || d === 6) ? 'weekend' : 'weekday'; };
+  // 'open' | 'closed' | 'unknown'
+  function openState(s, from, to, type = 'weekday') {
+    if (!s.hours) return 'unknown';
+    const ranges = s.hours[type];
+    if (!ranges) return 'closed';
+    return ranges.some(([a, b]) => toMin(a) <= from && to <= toMin(b)) ? 'open' : 'closed';
+  }
+  function travel(a, b) {
+    const t = st.school.travelMinutes;
+    if (a === b) return t.sameBuilding;
+    const p = t.pairs.find(([x, y]) => (x === a && y === b) || (x === b && y === a));
+    return p ? p[2] : t.default;
+  }
+
+  // ===== 3. 규칙 기반 계획 생성 (school.json 기준) =====
+  const BUFFER = 10;            // 다음 수업 도착 여유
+  function makePlan(seq, q) {
+    // seq: 방문할 공간 배열 (활동 3개 이상이면 최대 3곳)
+    let moves = 0, at = q.from;
+    const legs = seq.map(s => { const m = travel(at, s.building); moves += m; at = s.building; return m; });
+    const back = travel(at, q.to); moves += back;
+    const fixed = seq.filter(s => FIXED.includes(s.activity)).reduce((a, s) => a + s.duration, 0);
+    const flex = seq.filter(s => !FIXED.includes(s.activity));
+    const rest = q.gap - moves - fixed - BUFFER;
+    if (rest < 0) return null;
+    const share = flex.length ? Math.floor(rest / flex.length / 5) * 5 : 0;
+    if (flex.some(s => share < s.duration)) return null;
+    const durs = seq.map(s => FIXED.includes(s.activity) ? s.duration : share);
+    const cost = seq.reduce((a, s) => a + (s.cost || 0), 0);
+    if (cost > q.budget) return null;
+
+    // 시간표 만들기 + 운영시간 검사
+    let t = q.start; const tl = [], seg = [], flags = [];
+    tl.push({ time:t, icon:'🚶', title:`${building(q.from).name} 출발`, sub:`${seq[0].name}까지 약 ${legs[0]}분` });
+    for (let i = 0; i < seq.length; i++) {
+      const s = seq[i];
+      if (i > 0) { tl.push({ time:t, icon:'🚶', title:'이동', sub:`${seq[i].name}까지 약 ${legs[i]}분`, move:true }); }
+      t += legs[i]; seg.push(['move', legs[i]]);
+      const o = openState(s, t, t + durs[i]);
+      if (o === 'closed') return null;
+      if (o === 'unknown') flags.push(s.name);
+      tl.push({ time:t, icon:ICON[s.activity], title:s.name, sub:`${where(s)} · ${s.activity} ${durs[i]}분${s.cost ? ` · 약 ${won(s.cost)}` : ''}`, space:s.id, tips:tipsFor(s, s.activity, durs[i]) });
+      t += durs[i]; seg.push([s.activity, durs[i]]);
+    }
+    t += back; seg.push(['move', back]);
+    const left = q.end - t;
+    seg.push(['buffer', left]);
+    tl.push({ time:t, icon:'🏫', title:`${building(q.to).name} 도착`, sub:`수업 ${left}분 전` });
+
+    const acts = [...new Set(seq.map(s => s.activity))];
+    return {
+      id: seq.map(s => s.id).join('+'), seq, acts, durs, cost, moves, tl, seg, flags,
+      total: t - q.start, arrive: fmt(t), left,
+      covers: q.purposes.every(p => acts.includes(p)),
+      title: seq.map(doing).join(' → ')
+    };
+  }
+  function generate(q) {
+    const cands = st.school.spaces.flatMap(s => [s.activity, ...(s.alsoFor || [])].filter(a => a && q.purposes.includes(a)).map(a => ({ ...s, activity:a })));
+    const seqs = cands.map(s => [s]);
+    for (const a of cands) for (const b of cands) {
+      if (a.activity === b.activity || a.id === b.id) continue;
+      if (a.activity !== '식사' && b.activity === '식사') continue;   // 식사를 먼저
+      seqs.push([a, b]);
+    }
+    const okOrder = seq => seq.every((s, i) => !(s.activity === '식사' && seq.slice(0, i).some(x => x.activity === '공부' || x.activity === '휴식')));
+    if (q.purposes.length >= 3) for (const a of cands) for (const b of cands) for (const c of cands) {
+      const seq = [a, b, c];
+      if (new Set(seq.map(x => x.activity)).size < 3 || new Set(seq.map(x => x.id)).size < 3 || !okOrder(seq)) continue;
+      seqs.push(seq);
+    }
+    const plans = seqs.map(s => makePlan(s, q)).filter(Boolean);
+    const score = p => (p.covers ? 100 : 0) + p.acts.length * 10 - p.flags.length * 8 - p.moves * 0.5 - p.cost / 1000 + (p.total / 10) + p.seq.filter(s => s.source.official).length * 5;   // 공식 확인 장소 우선
+    plans.sort((a, b) => score(b) - score(a));
+    // 첫 장소가 겹치지 않게 다양하게 최대 3개
+    const pick = [], used = new Set();
+    for (const p of plans) { if (used.has(p.seq[0].id)) continue; pick.push(p); used.add(p.seq[0].id); if (pick.length === 3) break; }
+    return pick;
+  }
+  function reason(p, q) {
+    const acts = p.acts.join('·');
+    let r = `공강 ${q.gap}분 안에 ${acts}${p.acts.length > 1 ? '를 모두' : '를'} 넣고 ${building(q.to).name}에 수업 ${p.left}분 전에 도착하는 계획이에요. 이동은 모두 약 ${p.moves}분이에요.`;
+    if (!p.covers) r += ` 선택한 활동을 모두 넣기에는 시간이나 예산이 부족해 일부만 담았어요.`;
+    return r;
+  }
+
+  // ===== 4. 화면 전환 (브라우저 뒤로가기 연동) =====
+  // 탭 화면(홈·공간·플래닝)은 하단 탭바를 보이고, 하위 화면(추천 결과·상세)은 뒤로가기만 보임
+  const isTab = id => !!document.getElementById(id).dataset.tab;
+  function render(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('is-active', s.id === id));
+    const tab = isTab(id);
+    if (tab) st.tab = id;                       // 하위 화면은 들어온 탭을 계속 강조
+    $('#backBtn').hidden = tab;                 // 헤더·탭바는 항상 유지, 하위 화면에서만 뒤로가기 표시
+    document.querySelectorAll('#tabbar [data-tab]').forEach(b => { if (b.dataset.tab === (st.tab || 'home')) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+    window.scrollTo(0, 0);
+  }
+  function go(id, push = true) {
+    if (!isTab(id) && !st.ready) id = 'home';
+    render(id);
+    if (push) history.pushState({ id, tab:st.tab }, '', '#' + id);
+  }
+  addEventListener('popstate', e => { st.tab = (e.state && e.state.tab) || 'home'; render((e.state && e.state.id) || 'home'); });
+  history.replaceState({ id:'home', tab:'home' }, '', location.pathname + location.search);
+  $('#backBtn').addEventListener('click', () => history.back());
+  $('#brand').addEventListener('click', () => go('home'));
+  document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
+  $('#tabbar').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b && b.dataset.tab !== document.querySelector('.screen.is-active').id) go(b.dataset.tab); });
+  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
+  function openSheet(el) { el.classList.add('open'); el.setAttribute('aria-hidden', 'false'); }
+  function closeSheet(el) { el.classList.remove('open'); el.setAttribute('aria-hidden', 'true'); }
+  document.querySelectorAll('.sheet-wrap').forEach(w => w.addEventListener('click', e => { if (e.target === w || e.target.closest('[data-close]')) closeSheet(w); }));
+  addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.sheet-wrap.open').forEach(closeSheet); });
+
+  // ===== 5. 메인: 입력 =====
+  const purposes = () => [...document.querySelectorAll('.pchip[aria-pressed="true"]')].map(b => b.dataset.p);
+  const gap = () => ($('#start').value && $('#end').value) ? toMin($('#end').value) - toMin($('#start').value) : NaN;
+  function paintGap() { const g = gap(); $('#gapText').textContent = isNaN(g) ? '—' : (g > 0 ? `${g}분` : '시간을 확인해 주세요'); }
+  ['start', 'end'].forEach(id => $('#' + id).addEventListener('input', () => { paintGap(); $('#f-time').classList.remove('has-error'); }));
+  $('#budget').addEventListener('input', e => $('#budgetText').textContent = won(+e.target.value));
+  document.querySelectorAll('.pchip').forEach(b => b.addEventListener('click', () => {
+    b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+    $('#f-purpose').classList.remove('has-error');
+  }));
+  function validate() {
+    let ok = true; const g = gap();
+    if (isNaN(g)) { $('#timeErr').textContent = '공강 시작·종료 시간을 모두 입력해 주세요'; $('#f-time').classList.add('has-error'); ok = false; }
+    else if (g <= 0) { $('#timeErr').textContent = '종료 시간이 시작 시간보다 빨라요'; $('#f-time').classList.add('has-error'); ok = false; }
+    if (!purposes().length) { $('#f-purpose').classList.add('has-error'); ok = false; }
+    return ok;
+  }
+  const query = () => ({ start:toMin($('#start').value), end:toMin($('#end').value), gap:gap(), from:$('#from').value, to:$('#to').value, purposes:purposes(), budget:+$('#budget').value });
+
+  $('#form').addEventListener('submit', e => {
+    e.preventDefault();
+    if (!st.school) return toast('학교 정보를 불러오는 중이에요');
+    if (!validate()) { toast('입력한 조건을 확인해 주세요'); document.querySelector('.has-error')?.scrollIntoView({ behavior:'smooth', block:'center' }); return; }
+    const q = query();
+    $('#cond').innerHTML =
+      `<span class="tag tag--brand">⏱ ${fmt(q.start)}–${fmt(q.end)} · ${q.gap}분</span>` +
+      `<span class="tag tag--gray">📍 ${building(q.from).name} → ${building(q.to).name}</span>` +
+      q.purposes.map(x => `<span class="tag tag--gray">${ICON[x]} ${x}</span>`).join('') +
+      `<span class="tag tag--gray">💳 ${won(q.budget)}</span>`;
+    st.ready = true; go('result'); load(q);
+  });
+
+  // ===== 6. 추천 결과 =====
+  function show(k) { ['loading', 'list', 'empty', 'fail'].forEach(x => $('#' + x).hidden = x !== k); $('#resultNote').hidden = k !== 'list'; }
+  function load(q) {
+    show('loading');
+    setTimeout(() => {
+      if (st.failOnce) { st.failOnce = false; show('fail'); return; }
+      st.plans = generate(q);
+      if (!st.plans.length) {
+        const noBudget = generate({ ...q, budget:Infinity }).length > 0;
+        $('#emptyWhy').innerHTML = noBudget
+          ? `예산 ${won(q.budget)}으로 갈 수 있는 곳이 없어요<br>예산을 늘리거나 활동을 바꿔 보세요`
+          : `공강 ${q.gap}분 안에 이동과 활동을 넣기 어렵거나<br>운영시간이 맞는 곳이 없어요. 시간이나 활동을 바꿔 보세요`;
+        show('empty'); return;
+      }
+      $('#list').innerHTML = st.plans.map((p, i) => planCard(p, i, q)).join('');
+      show('list');
+    }, 900);
+  }
+  $('#retry').addEventListener('click', () => load(query()));
+  const SEGC = { move:['이동', '#D6CFBF'], 식사:['식사', 'var(--amber)'], 공부:['공부', '#3D6FD8'], 휴식:['휴식', '#8CCB9F'], 편의:['편의', '#A06CD5'], buffer:['여유', '#DDD7C9'] };
+  const bar = seg => { const sum = seg.reduce((a, [, m]) => a + m, 0); return `<span class="bar">${seg.map(([k, m]) => `<i class="seg-${k}" style="width:${m / sum * 100}%"></i>`).join('')}</span>`; };
+  const legend = seg => `<span class="legend">${[...new Set(seg.map(([k]) => k))].map(k => `<span style="--c:${SEGC[k][1]}">${SEGC[k][0]}</span>`).join('')}</span>`;
+  function planCard(p, i, q) {
+    return `<button class="plan" type="button" data-plan="${i}">
+      <span class="plan-head"><h3>${esc(p.title)}</h3>${i === 0 ? '<span class="tag tag--hot">★ 추천</span>' : ''}</span>
+      <span class="plan-stats"><span>총 <b>${p.total}분</b></span><span><b>${won(p.cost)}</b></span><span>도착 <b>${p.arrive}</b></span></span>
+      ${bar(p.seg)}${legend(p.seg)}
+      ${p.flags.length ? `<span class="plan-flags"><span class="tag tag--amber">운영시간 정보 없음 · ${esc(p.flags.join(', '))}</span></span>` : ''}
+      ${planTip(p)}
+      <span class="plan-more">자세히 보기 ›</span>
+    </button>`;
+  }
+  // 카드에는 첫 장소(계획마다 다름)의 장소별 팁을 한 줄로 보여줌
+  function planTip(p) {
+    const s = p.seq[0], t = (s.tips && s.tips[0]) || durationTip(s.activity, p.durs[0]);
+    return `<span class="plan-tip">💡 ${esc(s.name)}: ${esc(t)}</span>`;
+  }
+  $('#list').addEventListener('click', e => {
+    const b = e.target.closest('[data-plan]'); if (!b) return;
+    st.plan = st.plans[+b.dataset.plan];
+    showDetail(st.plan, query()); go('detail');
+  });
+
+  // ===== 7. 상세 (추천 계획) =====
+  function timeline(tl) {
+    return tl.map(x => `<li><time>${fmt(x.time)}</time><span class="pin">${x.icon}</span><span class="what"><b>${esc(x.title)}</b><small>${esc(x.sub)}</small>${x.tips ? `<div class="tip"><b>💡 여기서 이렇게 보내 보세요</b><ul>${x.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}${x.space ? `<button type="button" data-space="${x.space}">학교 정보 보기 ›</button>` : ''}</span></li>`).join('');
+  }
+  function showDetail(p, q) {
+    $('#detailTitle').textContent = '계획 상세';
+    $('#dTag').textContent = p.acts.map(a => ICON[a] + ' ' + a).join(' · ');
+    $('#dTitle').textContent = p.title;
+    $('#dStats').innerHTML = `<div><small>총 소요</small><b>${p.total}분</b></div><div><small>예상 비용</small><b>${won(p.cost)}</b></div><div><small>도착</small><b>${p.arrive}</b></div>`;
+    $('#dTl').innerHTML = timeline(p.tl);
+    $('#dReasonTitle').textContent = '추천 이유';
+    $('#dReason').innerHTML = `${esc(reason(p, q))}<small>규칙 기반 설명 · AI 추천 이유 생성은 다음 단계에서 연결</small>`;
+    $('#dCheckWrap').hidden = false;
+    $('#dChecks').innerHTML = [
+      [`공강 ${q.gap}분 안에 끝나요 (도착 여유 ${p.left}분)`, true],
+      [`예산 ${won(q.budget)} 이하예요 (예상 ${won(p.cost)})`, true],
+      ...p.seq.map(s => { const o = openState(s, 0, 0); return o === 'unknown' ? [`${s.name}: 운영시간 정보 없음`, false] : [`${s.name}: 운영시간 안이에요`, true]; })
+    ].map(([t, ok]) => `<li class="${ok ? '' : 'warn'}">${esc(t)}</li>`).join('');
+    $('#dSource').textContent = `학교 정보 기준: ${st.school.meta.school} 공간 정보(JSON) · 운영시간은 관리자 입력 정보로 변경될 수 있어요 · 이동시간은 실측 전 추정치`;
+    $('#choose').hidden = false; $('#useShared').hidden = true; $('#delMine').hidden = true;
+  }
+
+  // ===== 8. 선택 완료 + 공유 =====
+  // 계획을 고르면 내 플래닝에 바로 저장하고, 원하면 공유까지
+  $('#choose').addEventListener('click', () => {
+    const q = query(), p = st.plan;
+    st.saved = {
+      id:'my-' + Date.now(), mine:true, shared:false, nickname:'나',
+      date: new Date().toISOString().slice(0, 10),
+      start: fmt(q.start), end: fmt(q.end), purposes: p.acts,
+      steps: p.seq.map((s, i) => [s.id, p.durs[i]]), memo:'',
+      title: p.title, arrive: p.arrive, to: q.to
+    };
+    writeMine([st.saved, ...readMine()]);
+    $('#doneText').innerHTML = `<b>${esc(p.title)}</b><br>${p.arrive}에 ${building(q.to).name} 도착 예정이에요`;
+    $('#nick').value = ''; $('#memo').value = '';
+    openSheet($('#doneSheet'));
+  });
+  function toMine(msg) { closeSheet($('#doneSheet')); st.plan = null; st.ready = false; renderFeed(); seg('mine'); go('feed'); if (msg) toast(msg); }
+  $('#restart').addEventListener('click', () => toMine());
+  $('#shareBtn').addEventListener('click', () => {
+    const list = readMine().map(x => x.id === st.saved.id ? { ...x, shared:true, nickname:$('#nick').value.trim() || '익명 학생', memo:$('#memo').value.trim() } : x);
+    writeMine(list); toMine('내 플래닝을 공유했어요');
+  });
+  function writeMine(list) { try { localStorage.setItem(LS_KEY, JSON.stringify(list.slice(0, 30))); } catch (_) {} }
+  function readMine() {
+    try {
+      const old = JSON.parse(localStorage.getItem(LS_OLD) || 'null');
+      if (old) { localStorage.removeItem(LS_OLD); writeMine([...old.map(x => ({ ...x, shared:true })), ...(JSON.parse(localStorage.getItem(LS_KEY)) || [])]); }
+      return JSON.parse(localStorage.getItem(LS_KEY)) || [];
+    } catch (_) { return []; }
+  }
+
+  // ===== 10. 우리 학교 공간 목록 =====
+  let cat = '전체';
+  function nowState(s) {
+    const n = new Date(), m = n.getHours() * 60 + n.getMinutes();
+    if (!s.hours) return ['운영시간 정보 없음', 'tag--amber'];
+    return openState(s, m, m, dayType()) === 'open' ? ['지금 이용 가능', 'tag--mint'] : ['지금 이용 불가', 'tag--rose'];
+  }
+  function renderSpaces() {
+    const list = st.school.spaces.filter(s => cat === '전체' || s.category === cat);
+    $('#spaceList').innerHTML = list.map(s => {
+      const [txt, cls] = nowState(s);
+      return `<button class="space" type="button" data-space="${s.id}">
+        <span class="ic">${ICON[s.category] || '📍'}</span>
+        <span class="tx"><b>${esc(s.name)}</b><small>${esc(where(s))}${s.hours ? ' · ' + esc(s.hours.text) : ''}</small></span>
+        <span class="st"><span class="tag ${cls}">${txt}</span></span>
+      </button>`;
+    }).join('');
+    const n = new Date();
+    $('#nowText').textContent = `${dayType() === 'weekend' ? '주말' : '평일'} ${fmt(n.getHours() * 60 + n.getMinutes())} 기준`;
+  }
+  $('#spaceFilters').addEventListener('click', e => {
+    const b = e.target.closest('[data-cat]'); if (!b) return;
+    cat = b.dataset.cat;
+    document.querySelectorAll('#spaceFilters .filter').forEach(f => f.setAttribute('aria-pressed', String(f === b)));
+    renderSpaces();
+  });
+
+  // 실제 학교 정보 보기 (목록·시간표 공용)
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-space]'); if (!b) return;
+    const s = space(b.dataset.space), bd = building(s.building);
+    $('#spBadge').className = 'tag ' + (s.source.official ? 'tag--mint' : 'tag--amber');
+    $('#spBadge').textContent = s.source.official ? '위치·운영 공식 안내' : '위치: 비공식 자료';
+    $('#spTitle').textContent = s.name;
+    const rows = [
+      ['위치', `${bd.name} ${s.floor}`],
+      ['건물 용도', bd.use],
+      ['분류', s.category],
+      ['운영시간', s.hours ? `${s.hours.text}\n(${s.hours.enteredBy || '관리자'} 입력 · ${s.hours.updatedAt || st.school.meta.checkedAt} · 변경될 수 있어요)` : '확인 필요'],
+      ['휴무', s.hours && s.hours.closed ? s.hours.closed : (s.hours ? '정보 없음' : '확인 필요')],
+      ['예상 비용', s.cost ? `약 ${won(s.cost)} (${s.costNote || '예시'})` : (s.activity ? '무료' : '—')],
+      ['머무는 시간', s.duration ? `최소 ${s.duration}분 기준` : '—']
+    ];
+    $('#spRows').innerHTML = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('') +
+      (s.tips ? `<div><dt>하기 좋은 것</dt><dd><ul class="sheet-tips">${s.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul></dd></div>` : '');
+    $('#spSource').innerHTML = `위치 출처: <a href="${esc(s.source.url)}" target="_blank" rel="noopener">${esc(s.source.name)}</a><br>운영시간: 관리자 입력 정보 · 상세 운영시간은 변경될 수 있어요`;
+    openSheet($('#spaceSheet'));
+  });
+
+  // ===== 11. 다른 사람 공강 플래닝 =====
+  function sharedToPlan(sp) {
+    const seq = sp.steps.map(([id]) => space(id));
+    let t = toMin(sp.start); const tl = [], seg = [];
+    seq.forEach((s, i) => {
+      if (i > 0) { const m = travel(seq[i - 1].building, s.building); tl.push({ time:t, icon:'🚶', title:'이동', sub:`${s.name}까지 약 ${m}분` }); t += m; seg.push(['move', m]); }
+      const d = sp.steps[i][1];
+      tl.push({ time:t, icon:ICON[s.activity], title:s.name, sub:`${where(s)} · ${s.activity} ${d}분`, space:s.id, tips:tipsFor(s, s.activity, d) });
+      t += d; seg.push([s.activity, d]);
+    });
+    return { seq, tl, seg, total:toMin(sp.end) - toMin(sp.start), cost:seq.reduce((a, s) => a + (s.cost || 0), 0), acts:[...new Set(seq.map(s => s.activity))] };
+  }
+  let feedTab = 'mine';
+  function seg(k) {
+    feedTab = k;
+    $('#seg-mine').setAttribute('aria-selected', String(k === 'mine'));
+    $('#seg-others').setAttribute('aria-selected', String(k === 'others'));
+    renderFeed();
+  }
+  $('#seg-mine').addEventListener('click', () => seg('mine'));
+  $('#seg-others').addEventListener('click', () => seg('others'));
+
+  function feedCard(sp) {
+    const route = sp.steps.map(([id]) => space(id)?.name || id).join(' → ');
+    const badge = sp.mine ? (sp.shared ? ['tag--brand', '공유함'] : ['tag--gray', '나만 보기']) : ['tag--gray', '예시'];
+    const who = sp.mine ? (sp.shared ? sp.nickname : '나') : sp.nickname;
+    return `<button class="feed" type="button" data-feed="${esc(sp.id)}">
+      <span class="feed-top"><span class="feed-who"><span class="avatar">${esc(who.slice(0, 1))}</span>${esc(who)}</span>
+        <span class="tag ${badge[0]}">${badge[1]}</span></span>
+      <span class="feed-meta">${esc(sp.date)} · ${esc(sp.start)}–${esc(sp.end)} · ${sp.purposes.map(p => ICON[p] + ' ' + p).join(' ')}</span>
+      <span class="feed-route" style="display:block">${esc(route)}</span>
+      ${sp.memo ? `<span class="feed-memo">“${esc(sp.memo)}”</span>` : ''}
+    </button>`;
+  }
+  function renderFeed() {
+    const mine = readMine(), others = st.shared;
+    const list = feedTab === 'mine' ? mine : others;
+    $('#feedCount').textContent = `${list.length}개`;
+    $('#seg-mine').textContent = `내 플래닝 ${mine.length}`;
+    $('#seg-others').textContent = `다른 사람 플래닝 ${others.length}`;
+    $('#feedList').innerHTML = list.length ? list.map(feedCard).join('')
+      : `<div class="feed-empty">🗓️<b>아직 저장한 플래닝이 없어요</b>홈에서 추천받은 계획을 고르면 여기에 모여요<br><button class="cta" type="button" data-go="home" style="margin-top:14px">추천받으러 가기</button></div>`;
+    $('#feedNote').textContent = feedTab === 'mine'
+      ? '내 플래닝은 이 기기에 저장돼요. 공유한 플래닝은 서버를 연결하면 다른 학생에게 보여요'
+      : st.sharedNote;
+  }
+  $('#feedList').addEventListener('click', e => {
+    const b = e.target.closest('[data-feed]'); if (!b) return;
+    const sp = [...readMine(), ...st.shared].find(x => x.id === b.dataset.feed);
+    const p = sharedToPlan(sp);
+    st.viewShared = sp;
+    $('#detailTitle').textContent = sp.mine ? '내 플래닝' : '플래닝 상세';
+    $('#dTag').textContent = sp.mine ? `${sp.shared ? '공유함' : '나만 보기'} · ${sp.date}` : `${sp.nickname} · ${sp.date}`;
+    $('#dTitle').textContent = p.seq.map(doing).join(' → ');
+    $('#dStats').innerHTML = `<div><small>공강</small><b>${p.total}분</b></div><div><small>예상 비용</small><b>${won(p.cost)}</b></div><div><small>시작</small><b>${esc(sp.start)}</b></div>`;
+    $('#dTl').innerHTML = timeline(p.tl);
+    $('#dReasonTitle').textContent = '한 줄 메모';
+    $('#dReason').innerHTML = sp.memo ? esc(sp.memo) : '<small>메모가 없어요</small>';
+    $('#dCheckWrap').hidden = true;
+    $('#dSource').textContent = sp.mine ? '이 기기에 저장된 내 플래닝이에요' : '수업 시연용 예시 플래닝이에요';
+    $('#choose').hidden = true; $('#useShared').hidden = false; $('#delMine').hidden = !sp.mine;
+    $('#useShared').textContent = sp.mine ? '같은 조건으로 다시 추천받기' : '이 플래닝 조건으로 추천받기';
+    st.ready = true; go('detail');
+  });
+  $('#delMine').addEventListener('click', () => {
+    writeMine(readMine().filter(x => x.id !== st.viewShared.id));
+    renderFeed(); history.back(); toast('내 플래닝에서 삭제했어요');
+  });
+  // 다른 사람 플래닝 조건으로 다시 추천받기
+  $('#useShared').addEventListener('click', () => {
+    const sp = st.viewShared;
+    $('#start').value = sp.start; $('#end').value = sp.end; paintGap();
+    document.querySelectorAll('.pchip').forEach(b => b.setAttribute('aria-pressed', String(sp.purposes.includes(b.dataset.p))));
+    go('home'); toast('플래닝 조건을 채웠어요. 추천받기를 눌러 보세요');
+  });
+
+  // ===== 12. 시작 =====
+  (async () => {
+    const [school, shared] = await Promise.all([loadJSON('10week_data/school.json', 'data-school'), loadJSON('10week_data/shared-plans.json', 'data-shared')]);
+    st.school = school; st.shared = shared.plans;
+    const opts = school.buildings.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
+    $('#from').innerHTML = opts; $('#to').innerHTML = opts;
+    $('#from').value = 'B3'; $('#to').value = 'B3';
+    $('#schoolChip').textContent = school.meta.school;
+    $('#helloSchool').textContent = `${school.meta.school} 공강 플래너`;
+    $('#dataNote').innerHTML = `${esc(school.meta.note)} · 확인일 ${esc(school.meta.checkedAt)}`;
+    st.sharedNote = shared.note;
+    paintGap(); renderSpaces(); renderFeed();
+  })();
+})();
+</script>
+</body>
+</html>
