@@ -9,7 +9,7 @@
   - 10week_prototype.html(ver0.4)에서 이어서 만든 작업본임
   - 고정 예시(PLANS)를 지우고 가상 장소 자료(PLACES)·추정 이동시간·운영시간·예산으로 계획을 실제 계산함
   - 계획별 방문 장소는 최대 2곳(9주차 PRD ver0.1 기준), 다음 수업 도착 여유 10분 포함
-  - 추천 이유는 계산 결과로 만든 문장이며 AI 설명은 아직 연결 전임 (화면에 표시)
+  - 상세 화면의 추천 이유는 AI 서버(10week_data/ai-config.js → Apps Script → 생성형 AI API)로 실제 생성함, 실패하면 계산 설명 + 재시도 안내
   - 실패 화면 확인용: 주소 뒤에 ?fail 을 붙이면 첫 추천이 '처리 실패'로 표시됨
 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
@@ -135,6 +135,9 @@
   .checks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
   .checks li{display:flex;align-items:center;gap:8px;font-size:14px;background:var(--card);border-radius:12px;padding:10px 12px}
   .checks li::before{content:"✓";flex:none;width:20px;height:20px;border-radius:50%;background:var(--mint-050);color:#0B7A63;display:grid;place-items:center;font-weight:800;font-size:12px}
+  .ai-box small{display:block;margin-top:6px;color:var(--ink-3);font-size:12px}
+  .ai-wait{color:var(--ink-3)}
+  .ai-retry{margin-left:6px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:2px 8px;font-size:12px;cursor:pointer}
   .source{font-size:12px;color:var(--ink-3);margin-top:14px;line-height:1.5}
 
   /* ===== 선택 완료 시트 · 토스트 ===== */
@@ -213,7 +216,7 @@
     </div>
 
     <div id="list" hidden></div>
-    <p class="sample-note" id="sampleNote" hidden>※ 가상 장소 자료로 계산한 추천이에요 · 추천 이유는 AI 연결 전 계산 문장이에요</p>
+    <p class="sample-note" id="sampleNote" hidden>※ 가상 장소 자료로 계산한 추천이에요 · 추천 이유는 상세 화면에서 AI가 생성해요</p>
 
     <div class="empty" id="empty" hidden>
       <div class="em">🙅</div>
@@ -239,7 +242,7 @@
     </div>
     <h3 class="sec-title">활동 시간표</h3>
     <ol class="tl" id="dTl"></ol>
-    <h3 class="sec-title">추천 이유 <span class="tag tag--gray">AI 연결 전</span></h3>
+    <h3 class="sec-title">AI 추천 이유</h3>
     <div class="ai-box" id="dReason"></div>
     <h3 class="sec-title">조건 확인</h3>
     <ul class="checks" id="dChecks"></ul>
@@ -259,6 +262,7 @@
 </div>
 <div class="toast" id="toast" role="status"></div>
 
+<script src="10week_data/ai-config.js"></script>
 <script>
 (() => {
   'use strict';
@@ -282,6 +286,7 @@
 
   const $ = s => document.querySelector(s);
   const won = n => n.toLocaleString('ko-KR') + '원';
+  const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
   const st = { plan:null, failOnce: new URLSearchParams(location.search).has('fail') };
   const toMin = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
   const purposes = () => [...document.querySelectorAll('.pchip[aria-pressed="true"]')].map(b => b.dataset.p);
@@ -422,6 +427,39 @@
     detail(); go('S-03');
   });
 
+
+  // ===== AI 추천 이유 생성 — 서버(Google Apps Script)가 생성형 AI API를 호출함 · API 키는 서버에만 보관 =====
+  async function askAI(payload) {
+    const url = window.GONGPLAN_AI_ENDPOINT;
+    if (!url) throw new Error('AI 서버 주소 없음');
+    const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 20000);
+    try {
+      // Apps Script는 text/plain으로 보내야 사전 요청(CORS preflight) 없이 처리됨
+      const r = await fetch(url, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload), signal: ctrl.signal });
+      const j = await r.json();
+      if (!j.ok || !j.text) throw new Error(j.error || '빈 응답');
+      return String(j.text).trim();
+    } finally { clearTimeout(timer); }
+  }
+
+  function aiPayload(x) {
+    return { app:'gongplan', version:'0.5', sentences:3,
+      plan:{ title:x.name, timeline:x.tl.map(([t, , w, d]) => `${t} ${w} — ${d}`), totalMin:x.total, cost:x.cost, arrive:x.arrive },
+      condition:{ gapMin:gap(), budget:+$('#budget').value, purposes:purposes(), nextClass:$('#to').value } };
+  }
+  async function aiReasonFor(x) {
+    const box = $('#dReason'), token = st.aiToken = (st.aiToken || 0) + 1;
+    box.innerHTML = '<span class="ai-wait">✨ AI가 추천 이유를 쓰고 있어요…</span>';
+    try {
+      const text = await askAI(aiPayload(x));
+      if (token !== st.aiToken) return;
+      box.innerHTML = `${esc(text)}<small>✨ AI 생성 · 계산된 계획을 바탕으로 설명해요</small>`;
+    } catch (e) {
+      if (token !== st.aiToken) return;
+      box.innerHTML = `${esc(x.reason)}<small>AI 응답 실패 · 계산 결과로 만든 설명이에요 <button type="button" class="ai-retry">다시 시도</button></small>`;
+      box.querySelector('.ai-retry').addEventListener('click', () => aiReasonFor(x));
+    }
+  }
   // ===== S-03 계획 상세·선택 =====
   function detail(){
     const x = st.plan, g = gap(), budget = +$('#budget').value;
@@ -429,7 +467,7 @@
     $('#dTitle').textContent = x.name;
     $('#dStats').innerHTML = `<div><small>총 소요</small><b>${x.total}분</b></div><div><small>예상 비용</small><b>${won(x.cost)}</b></div><div><small>도착</small><b>${x.arrive}</b></div>`;
     $('#dTl').innerHTML = x.tl.map(([t,ic,w,s]) => `<li><time>${t}</time><span class="pin">${ic}</span><span class="what"><b>${w}</b><small>${s}</small></span></li>`).join('');
-    $('#dReason').innerHTML = x.reason + '<br><small style="color:var(--ink-3)">계산 결과로 만든 설명 · AI 추천 이유 생성은 다음 버전에서 연결</small>';
+    aiReasonFor(x);
     $('#dChecks').innerHTML = [
       `공강 ${g}분 안에 끝나요 (도착 여유 ${BUFFER}분 포함)`,
       `예산 ${won(budget)} 이하예요`,

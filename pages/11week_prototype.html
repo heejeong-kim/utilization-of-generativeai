@@ -7,12 +7,13 @@
 <!--
   11주차 [실습] 1. MVP 기능 보완과 고도화 샘플 (ver0.6) — 캠퍼스 공강 플래너
   - 10week_mvp.html(ver0.5)에서 이어서 고도화한 작업본임
+  - AI 추천 이유: 2문장 이내 + 장소별 할 일 반영 (10주차 중간 발표 피드백)
   - 가상 장소 → 실제 학교 공간 14곳, 하단 탭(홈·공간·플래닝), 편의 활동, 내 플래닝 저장·공유 추가 / 계획 복사·내려받기 삭제
   - 학교 공간 정보: 10week_data/school.json (건물·공간·운영시간·출처·확인일)
   - 다른 사람 공강 플래닝: 10week_data/shared-plans.json (예시) + 이 기기에서 공유한 플래닝(localStorage)
-  - 추천: school.json 의 공간·운영시간·추정 이동시간·예산으로 규칙 기반 계획을 계산함 (AI 설명 연결 전)
+  - 추천: school.json 의 공간·운영시간·추정 이동시간·예산으로 규칙 기반 계획을 계산하고, 상세 화면의 추천 이유는 AI 서버(10week_data/ai-config.js)로 생성함
   - 파일을 더블클릭해 열면(file://) 브라우저 보안 때문에 JSON을 못 읽으므로 아래 내장 사본을 대신 사용함
-  - 실패 화면 확인용: 주소 뒤에 ?fail 을 붙이면 첫 추천이 'AI 응답 실패'로 표시됨
+  - 실패 화면 확인용: 주소 뒤에 ?fail 을 붙이면 첫 추천이 '추천 실패'로 표시됨
 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
@@ -186,6 +187,8 @@
   .sheet-tips{margin:4px 0 0;padding-left:18px;font-size:14px;line-height:1.7;color:var(--ink-2)}
   .ai-box{background:var(--card);border-radius:var(--r-md);padding:14px 16px;border-left:4px solid var(--brand);box-shadow:var(--shadow);font-size:14px;line-height:1.6;color:var(--ink-2)}
   .ai-box small{display:block;margin-top:6px;color:var(--ink-3);font-size:12px}
+  .ai-wait{color:var(--ink-3)}
+  .ai-retry{margin-left:6px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:2px 8px;font-size:12px;cursor:pointer}
   .checks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
   .checks li{display:flex;align-items:center;gap:8px;font-size:14px;background:var(--card);border-radius:12px;padding:10px 12px}
   .checks li::before{content:"✓";flex:none;width:20px;height:20px;border-radius:50%;background:var(--mint-050);color:#0B6B52;display:grid;place-items:center;font-weight:800;font-size:12px}
@@ -392,6 +395,7 @@
 <div class="toast" id="toast" role="status"></div>
 
 <!-- 내장 사본: file:// 로 열었을 때 fetch 대신 사용 (원본: 10week_data/*.json) -->
+<script src="10week_data/ai-config.js"></script>
 <script type="application/json" id="data-school">{"meta": {"school": "동양미래대학교", "campus": "서울 구로구 경인로 445", "checkedAt": "2026-10-07", "note": "위치는 공식 안내·비공식 자료를 함께 정리함. 운영시간은 관리자가 직접 입력한 정보이며 학기·방학·학교 사정에 따라 변경될 수 있음. 가격·이동시간은 추정치", "travelNote": "건물 간 이동시간은 실측 전 추정치임", "tipNote": "장소별 추천 활동은 예시이며, AI를 연결하면 사용자의 목적과 남은 시간에 맞춰 생성함", "hoursNote": "운영시간은 관리자 입력 정보이며 변경될 수 있어요"}, "buildings": [{"id": "B1", "name": "1호관", "use": "대학본부·교양수업"}, {"id": "B2", "name": "2호관", "use": "경영학부"}, {"id": "B3", "name": "3호관", "use": "전기전자통신·컴퓨터공학부"}, {"id": "B4", "name": "4호관", "use": "기계·로봇자동화공학부"}, {"id": "B5", "name": "5호관", "use": "바이오융합공학과"}, {"id": "B6", "name": "6호관", "use": "실내건축·시각디자인·교양"}, {"id": "B7", "name": "7호관", "use": "건축 관련 학과"}, {"id": "B8", "name": "8호관", "use": "소방안전관리·콘텐츠학과·편의시설"}, {"id": "LIB", "name": "도서관", "use": "도서관·열람실"}], "travelMinutes": {"default": 5, "sameBuilding": 2, "pairs": [["B6", "B8", 3], ["B6", "B7", 2], ["B1", "B2", 4], ["LIB", "B1", 4], ["LIB", "B8", 6], ["B3", "B8", 5]]}, "spaces": [{"id": "food8", "name": "동양미래푸드(학생식당)", "building": "B8", "floor": "3층", "category": "식사", "activity": "식사", "hours": {"weekday": [["11:00", "14:00"], ["16:30", "18:00"]], "weekend": null, "text": "점심 11:00–14:00 · 저녁 16:30–18:00", "closed": "주말·공휴일 휴무, 방학 중 중식만 운영", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 25, "cost": 6000, "costNote": "가격 예시(확인 필요)", "source": {"name": "동양미래대학교 공식 캠퍼스 안내", "url": "https://www.dongyang.ac.kr/dongyang/249/subview.do", "official": true}, "tips": ["오늘 메뉴를 미리 확인하고 가기", "식사 후 같은 건물 2층 서점·1층 CU에서 필요한 것 함께 사기"]}, {"id": "subway8", "name": "서브웨이", "building": "B8", "floor": "1층", "category": "식사", "activity": "식사", "hours": {"weekday": [["08:30", "19:00"]], "weekend": null, "text": "평일 08:30–19:00", "closed": "주말·공휴일 휴무", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 20, "cost": 7500, "costNote": "가격 예시(확인 필요)", "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["메뉴를 미리 정해 두면 주문 대기 시간이 줄어요", "포장해서 공부·휴식 장소로 가져가도 좋아요"]}, {"id": "jeju8", "name": "제주몰빵", "building": "B8", "floor": "2층", "category": "식사", "activity": "식사", "hours": {"weekday": [["08:30", "18:00"]], "weekend": null, "text": "평일 08:30–18:00", "closed": "주말·공휴일 휴무", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 15, "cost": 4500, "costNote": "가격 예시(확인 필요)", "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["빵·음료로 가볍게 먹고 공부 장소로 이동하기", "남는 시간은 다음 수업 자료 미리 보기"]}, {"id": "cu8", "name": "CU 편의점", "building": "B8", "floor": "1층", "category": "편의", "activity": "식사", "hours": {"weekday": [["08:00", "21:00"]], "weekend": [["10:00", "16:00"]], "text": "평일 08:00–21:00 · 주말 10:00–16:00", "closed": "공휴일 단축 운영", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 15, "cost": 3500, "costNote": "가격 예시(확인 필요)", "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "alsoFor": ["편의"], "tips": ["삼각김밥·샌드위치로 빠르게 끼니 해결하기", "생수·필기구 등 다음 수업 준비물 미리 사기"]}, {"id": "book8", "name": "서점·모닝글로리", "building": "B8", "floor": "2층", "category": "편의", "activity": "편의", "hours": {"weekday": [["09:30", "17:30"]], "weekend": null, "text": "평일 09:30–17:30", "closed": "주말·공휴일 휴무", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "duration": 10, "cost": 0, "tips": ["전공 교재·참고서 재고 확인하기", "노트·필기구 등 학기 중 필요한 문구 채우기"]}, {"id": "cafe1", "name": "1호관 1층 카페", "building": "B1", "floor": "1층", "category": "휴식", "activity": "휴식", "hours": {"weekday": [["08:30", "18:00"]], "weekend": null, "text": "평일 08:30–18:00", "closed": "주말·공휴일 휴무", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 20, "cost": 3500, "costNote": "음료 가격 예시(확인 필요)", "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["음료 한 잔과 함께 다음 수업 자료 훑어보기", "팀원과 10~15분 짧은 팀플 회의하기"]}, {"id": "lounge1", "name": "1호관 층별 휴게공간", "building": "B1", "floor": "각 층", "category": "휴식", "activity": "휴식", "hours": {"weekday": [["08:00", "22:00"]], "weekend": [["09:00", "18:00"]], "text": "평일 08:00–22:00 · 주말 09:00–18:00 (건물 개방 시간)", "closed": "—", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 15, "cost": 0, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["눈 감고 쉬거나 가볍게 스트레칭하기", "다음 수업 강의실 근처에서 여유 있게 대기하기"]}, {"id": "view2", "name": "안양천 전망공간", "building": "B2", "floor": "7층", "category": "휴식", "activity": "휴식", "hours": {"weekday": [["09:00", "18:00"]], "weekend": null, "text": "평일 09:00–18:00", "closed": "주말·공휴일 미개방", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 15, "cost": 0, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["안양천 전망 보며 눈 쉬기", "오전 수업 내용을 머릿속으로 정리하며 쉬기"]}, {"id": "plaza", "name": "하이테크 플라자 잔디광장", "building": "B1", "floor": "야외", "category": "휴식", "activity": "휴식", "hours": {"weekday": [["07:00", "22:00"]], "weekend": [["07:00", "22:00"]], "text": "매일 07:00–22:00 (야외)", "closed": "우천 시 이용 어려움", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 15, "cost": 0, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["날씨 좋은 날 잔디광장 한 바퀴 산책하기", "햇볕 쬐며 가볍게 스트레칭하기"]}, {"id": "libcafe", "name": "도서관 스터디카페", "building": "LIB", "floor": "1층", "category": "공부", "activity": "공부", "hours": {"weekday": [["09:00", "21:00"]], "weekend": [["09:00", "18:00"]], "text": "평일 09:00–21:00 · 주말 1층만 18:00까지", "enteredBy": "관리자", "updatedAt": "2026-10-07", "closed": "주말 일부 층만 운영"}, "duration": 20, "cost": 0, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["노트북으로 과제·팀플 자료 정리하기", "대화가 필요한 공부는 열람실 대신 이곳에서"]}, {"id": "libroom", "name": "도서관 스터디룸·미래나래 온빛마루", "building": "LIB", "floor": "4층", "category": "공부", "activity": "공부", "hours": {"weekday": [["09:00", "21:00"]], "weekend": null, "text": "평일 09:00–21:00", "enteredBy": "관리자", "updatedAt": "2026-10-07", "closed": "주말·공휴일 휴무"}, "duration": 20, "cost": 0, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["스터디룸에서 팀 프로젝트 회의하기", "조별 과제 역할 나누고 일정 정하기"]}, {"id": "libread", "name": "도서관 열람실", "building": "LIB", "floor": "6층", "category": "공부", "activity": "공부", "hours": {"weekday": [["09:00", "21:00"]], "weekend": null, "text": "평일 09:00–21:00", "enteredBy": "관리자", "updatedAt": "2026-10-07", "closed": "주말·공휴일 휴무"}, "duration": 20, "cost": 0, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["조용히 개인 공부·시험 준비하기", "25분 집중 + 5분 휴식으로 한 단원 끝내기"]}, {"id": "tutor5", "name": "전공튜터링 카페", "building": "B5", "floor": "—", "category": "공부", "activity": "공부", "hours": {"weekday": [["10:00", "17:00"]], "weekend": null, "text": "평일 10:00–17:00", "closed": "주말·공휴일·방학 휴무", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "duration": 20, "cost": 0, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}, "tips": ["전공 튜터링 전에 질문 거리 정리하기", "막힌 문제를 튜터에게 바로 물어보기"]}, {"id": "gym6", "name": "휘트니스센터", "building": "B6", "floor": "지하3층", "category": "편의", "activity": null, "hours": {"weekday": [["09:00", "20:00"]], "weekend": null, "text": "평일 09:00–20:00", "closed": "주말·공휴일 휴무", "enteredBy": "관리자", "updatedAt": "2026-10-07"}, "source": {"name": "나무위키 동양미래대학교/캠퍼스 (비공식)", "url": "https://namu.wiki/w/%EB%8F%99%EC%96%91%EB%AF%B8%EB%9E%98%EB%8C%80%ED%95%99%EA%B5%90/%EC%BA%A0%ED%8D%BC%EC%8A%A4", "official": false}}]}</script>
 <script type="application/json" id="data-shared">{"note": "수업 시연용 예시 데이터임. 실제 공유는 서버(예: Google Sheets·Apps Script) 연결 후 동작함", "plans": [{"id": "s1", "nickname": "컴공 1학년", "date": "2026-10-06", "start": "12:00", "end": "13:30", "purposes": ["식사", "공부"], "steps": [["food8", 25], ["libread", 35]], "memo": "학식 먹고 열람실에서 과제 마무리"}, {"id": "s2", "nickname": "경영 2학년", "date": "2026-10-06", "start": "10:30", "end": "11:30", "purposes": ["휴식"], "steps": [["view2", 40]], "memo": "2호관 7층 전망 보면서 쉬기 좋아요"}, {"id": "s3", "nickname": "시디 1학년", "date": "2026-10-05", "start": "13:00", "end": "14:30", "purposes": ["식사", "휴식"], "steps": [["subway8", 20], ["cafe1", 40]], "memo": "서브웨이 → 1호관 카페"}, {"id": "s4", "nickname": "로봇 2학년", "date": "2026-10-05", "start": "15:00", "end": "16:00", "purposes": ["공부"], "steps": [["libcafe", 45]], "memo": "스터디카페에서 시험 공부"}]}</script>
 
@@ -632,6 +636,40 @@
   function timeline(tl) {
     return tl.map(x => `<li><time>${fmt(x.time)}</time><span class="pin">${x.icon}</span><span class="what"><b>${esc(x.title)}</b><small>${esc(x.sub)}</small>${x.tips ? `<div class="tip"><b>💡 여기서 이렇게 보내 보세요</b><ul>${x.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}${x.space ? `<button type="button" data-space="${x.space}">학교 정보 보기 ›</button>` : ''}</span></li>`).join('');
   }
+
+  // ===== AI 추천 이유 생성 — 서버(Google Apps Script)가 생성형 AI API를 호출함 · API 키는 서버에만 보관 =====
+  async function askAI(payload) {
+    const url = window.GONGPLAN_AI_ENDPOINT;
+    if (!url) throw new Error('AI 서버 주소 없음');
+    const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 20000);
+    try {
+      // Apps Script는 text/plain으로 보내야 사전 요청(CORS preflight) 없이 처리됨
+      const r = await fetch(url, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload), signal: ctrl.signal });
+      const j = await r.json();
+      if (!j.ok || !j.text) throw new Error(j.error || '빈 응답');
+      return String(j.text).trim();
+    } finally { clearTimeout(timer); }
+  }
+
+  function aiPayload(p, q) {
+    return { app:'gongplan', version:'0.6', sentences:2,
+      plan:{ title:p.title, timeline:p.tl.map(x => `${fmt(x.time)} ${x.title} — ${x.sub}`), totalMin:p.total, cost:p.cost, arrive:p.arrive, minutesBeforeClass:p.left,
+             tips:p.seq.map(s => `${s.name}: ${(s.tips && s.tips[0]) || ''}`) },
+      condition:{ gapMin:q.gap, budget:q.budget, purposes:q.purposes, nextClass:building(q.to).name } };
+  }
+  async function aiReasonFor(p, q) {
+    const box = $('#dReason'), token = st.aiToken = (st.aiToken || 0) + 1, fallback = reason(p, q);
+    box.innerHTML = '<span class="ai-wait">✨ AI가 추천 이유를 쓰고 있어요…</span>';
+    try {
+      const text = await askAI(aiPayload(p, q));
+      if (token !== st.aiToken) return;
+      box.innerHTML = `${esc(text)}<small>✨ AI 생성 · 계산된 계획을 바탕으로 설명해요</small>`;
+    } catch (e) {
+      if (token !== st.aiToken) return;
+      box.innerHTML = `${esc(fallback)}<small>AI 응답 실패 · 계산 결과로 만든 설명이에요 <button type="button" class="ai-retry">다시 시도</button></small>`;
+      box.querySelector('.ai-retry').addEventListener('click', () => aiReasonFor(p, q));
+    }
+  }
   function showDetail(p, q) {
     $('#detailTitle').textContent = '계획 상세';
     $('#dTag').textContent = p.acts.map(a => ICON[a] + ' ' + a).join(' · ');
@@ -639,7 +677,7 @@
     $('#dStats').innerHTML = `<div><small>총 소요</small><b>${p.total}분</b></div><div><small>예상 비용</small><b>${won(p.cost)}</b></div><div><small>도착</small><b>${p.arrive}</b></div>`;
     $('#dTl').innerHTML = timeline(p.tl);
     $('#dReasonTitle').textContent = '추천 이유';
-    $('#dReason').innerHTML = `${esc(reason(p, q))}<small>규칙 기반 설명 · AI 추천 이유 생성은 다음 단계에서 연결</small>`;
+    aiReasonFor(p, q);
     $('#dCheckWrap').hidden = false;
     $('#dChecks').innerHTML = [
       [`공강 ${q.gap}분 안에 끝나요 (도착 여유 ${p.left}분)`, true],
