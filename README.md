@@ -12,7 +12,7 @@ utilization-of-generativeai/
 ├── index.html              # 강의 목록 인덱스 (루트에는 이 파일과 README.md만 둠)
 ├── README.md
 ├── assets/
-│   ├── img/                # 주차별 썸네일 1.png ~ 15.png
+│   ├── img/                # 주차별 썸네일 1.png ~ 15.png, 본문 이미지 N_n.png (예: 9_1.png)
 │   └── icon/               # 파비콘, 아이콘 등
 ├── css/
 │   ├── base.css            # 디자인 토큰, 리셋, 타이포그래피
@@ -21,8 +21,17 @@ utilization-of-generativeai/
 │   └── motion.css          # 앰비언트 모션, 스크롤 등장, 호버 모션
 ├── js/
 │   ├── data.js             # 주차 데이터 + 팀 데이터 (내용 수정은 여기서만)
-│   └── main.js             # 렌더링, 검색, 필터, 모션 제어
-└── pages/                  # 주차별 강의교안 페이지 (week01.html …)
+│   ├── main.js             # 렌더링, 검색, 필터, 모션 제어
+│   ├── backtop.js          # 맨 위로 버튼 (전 페이지 공통)
+│   └── team.js             # 팀 현황 페이지 (Apps Script 연동)
+└── pages/
+    ├── lecture-ot.html, lecture-week01~15.html   # 주차별 강의교안
+    ├── weekNN-full.enc.js  # 잠금 교안의 암호화 데이터 (9~15주차, 직접 수정 금지)
+    ├── 10week_wireframe.html · 10week_prototype.html · 10week_mvp.html
+    ├── 11week_prototype.html · 12week_prototype.html · 13week_prototype.html
+    │                       # 샘플 프로젝트 '캠퍼스 공강 플래너' 주차별 작업본 (ver0.3 → ver0.8)
+    ├── 10week_data/        # 샘플 앱용 학교 공간·공유 플래닝 데이터 (JSON)
+    └── team-project.html   # 팀 현황 페이지
 ```
 
 ---
@@ -106,7 +115,55 @@ utilization-of-generativeai/
 
 ---
 
-## 7. 로컬 확인 및 배포
+## 7. 강의교안 비밀번호 잠금
+
+9~15주차 강의교안은 비밀번호를 입력해야 열람할 수 있음.
+
+- `lecture-weekNN.html` 은 비밀번호 입력 화면만 담고 있고, 교안 본문(샘플 포함)은 `weekNN-full.enc.js` 에 암호화되어 있음
+- 암호화 방식: AES-256-GCM + PBKDF2-SHA256(600,000회) + gzip, 브라우저에서 입력한 비밀번호로 복호화함
+- **비밀번호는 어떤 파일에도 저장하지 않음** — 저장소·README·주석에 비밀번호를 적지 않음
+- 교안을 수정할 때는 Notion을 먼저 수정하고, 로컬에서 복호화 → 수정 → 다시 암호화한 뒤 `lecture-weekNN.html` 과 `weekNN-full.enc.js` 를 함께 올림
+- 샘플 앱 파일(`10week_*`, `11~13week_prototype.html`)은 별도 페이지라 잠금 대상이 아님
+
+---
+
+## 8. 샘플 프로젝트 버전 흐름
+
+| 주차 | 파일 | 버전 | 내용 |
+|---|---|---|---|
+| 10 | `10week_wireframe.html` | ver0.3 | HTML 와이어프레임 (점검 후 수정본) |
+| 10 | `10week_prototype.html` | ver0.4 | 프로토타입 (고정 예시 데이터) |
+| 10 | `10week_mvp.html` | ver0.5 | 최소 기능 구현 (가상 장소 자료로 실제 계산, AI 연결 전) |
+| 11 | `11week_prototype.html` | ver0.6 | 고도화 (실제 학교 공간 14곳, 하단 탭, 내 플래닝 저장·공유) |
+| 12 | `12week_prototype.html` | ver0.7 | 사용자 테스트 후 개선 (저장 위치 안내, 공유 데이터 범위 표시) |
+| 13 | `13week_prototype.html` | ver0.8 | 최종 QA 결함 수정 (운영정보 '확인 필요' 표시, 카드 글자 확대) |
+
+---
+
+## 9. 2026-10-21 업데이트 — GitHub에 올릴 파일
+
+**반드시 올림**
+
+- `pages/lecture-week09.html` ~ `lecture-week15.html` (7개)
+- `pages/week09-full.enc.js` ~ `week15-full.enc.js` (7개)
+- `pages/10week_wireframe.html`, `10week_prototype.html`, `10week_mvp.html`, `11week_prototype.html`, `12week_prototype.html`, `13week_prototype.html` (6개)
+- `pages/10week_data/school.json`, `pages/10week_data/shared-plans.json`
+- `assets/img/9_1.png` ~ `9_7.png`, `10_1.png` ~ `10_6.png` (13개)
+- `js/data.js` (9~15주차 카드 링크 연결)
+- `README.md`
+
+**함께 올림 (수정본)**
+
+- `index.html`, `js/main.js`, `js/backtop.js`, `js/team.js`
+- `pages/lecture-ot.html`, `pages/lecture-week01.html` ~ `lecture-week08.html`, `pages/team-project.html`
+
+**올리지 않음**
+
+- `.DS_Store`, `assets/.DS_Store`, `.claude/`, `outputs/`, `scripts/` 신규 파일, `assets/pdf/`(공개 여부 확인 후)
+
+---
+
+## 10. 로컬 확인 및 배포
 
 ```bash
 python3 -m http.server 5500
@@ -117,9 +174,10 @@ GitHub Pages: Settings → Pages → Source `Deploy from a branch` → Branch `m
 
 ---
 
-## 8. 다음 작업
+## 11. 다음 작업
 
-- [ ] `pages/week01.html` — 주차별 교안 템플릿 확정 후 나머지 14개 주차 복제
-- [ ] `assets/img/` 썸네일 15종 업로드
-- [ ] `js/data.js` 의 `link` 값 채우기
+- [x] 주차별 교안 페이지 `lecture-week01~15.html` 작성
+- [x] `js/data.js` 의 `link` 값 채우기
+- [ ] `assets/img/11_1.png`, `11_2.png` 추가 (11주차 본문 이미지 누락)
+- [ ] 샘플 앱 파일 잠금 여부 결정
 - [ ] `TEAM_STATUS_URL` 을 실제 팀 현황 보드 주소로 교체
