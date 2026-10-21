@@ -30,7 +30,7 @@ utilization-of-generativeai/
     ├── 10week_wireframe.html · 10week_prototype.html · 10week_mvp.html
     ├── 11week_prototype.html · 12week_prototype.html · 13week_prototype.html
     │                       # 샘플 프로젝트 '캠퍼스 공강 플래너' 주차별 작업본 (ver0.3 → ver0.8)
-    ├── 10week_data/        # 샘플 앱용 학교 공간·공유 플래닝 데이터 (JSON)
+    ├── 10week_data/        # 샘플 앱용 학교 공간·공유 플래닝 데이터 (JSON) + ai-config.js(AI 서버 주소)
     └── team-project.html   # 팀 현황 페이지
 ```
 
@@ -133,10 +133,24 @@ utilization-of-generativeai/
 |---|---|---|---|
 | 10 | `10week_wireframe.html` | ver0.3 | HTML 와이어프레임 (점검 후 수정본) |
 | 10 | `10week_prototype.html` | ver0.4 | 프로토타입 (고정 예시 데이터) |
-| 10 | `10week_mvp.html` | ver0.5 | 최소 기능 구현 (가상 장소 자료로 실제 계산, AI 연결 전) |
-| 11 | `11week_prototype.html` | ver0.6 | 고도화 (실제 학교 공간 14곳, 하단 탭, 내 플래닝 저장·공유) |
-| 12 | `12week_prototype.html` | ver0.7 | 사용자 테스트 후 개선 (저장 위치 안내, 공유 데이터 범위 표시) |
+| 10 | `10week_mvp.html` | ver0.5 | 최소 기능 구현 (가상 장소 자료로 실제 계산 + AI 추천 이유 생성) |
+| 11 | `11week_prototype.html` | ver0.6 | 고도화 (실제 학교 공간 14곳, 하단 탭, 내 플래닝 저장·공유, AI 설명 2문장·장소별 할 일) |
+| 12 | `12week_prototype.html` | ver0.7 | 사용자 테스트 후 개선 (저장 위치 안내, 공유 데이터 범위 표시, AI 설명 재검사) |
 | 13 | `13week_prototype.html` | ver0.8 | 최종 QA 결함 수정 (운영정보 '확인 필요' 표시, 카드 글자 확대) |
+
+---
+
+샘플 프로젝트는 **② 모델 구현형**임 — 추천 계획은 규칙으로 계산하고, 상세 화면의 추천 이유는 생성형 AI가 실제로 만듦
+
+### AI 서버 연결 (Google Apps Script → Gemini API)
+
+1. script.google.com 에서 새 프로젝트를 만들고 `scripts/gongplan-ai.gs` 내용을 붙여넣음
+2. 프로젝트 설정 → 스크립트 속성에 `GEMINI_API_KEY` 를 추가함 (Google AI Studio에서 발급, **코드·저장소에 넣지 않음**)
+3. 필요하면 스크립트 속성 `GEMINI_MODEL` 로 모델을 바꿈 (기본값 `gemini-3.5-flash-lite`)
+4. 배포 → 새 배포 → 웹 앱 → 실행 사용자: 나 / 액세스: 모든 사용자 → 웹 앱 URL 복사
+5. `pages/10week_data/ai-config.js` 의 `GONGPLAN_AI_ENDPOINT` 에 URL을 붙여넣고 올림
+
+주소가 비어 있거나 서버가 실패하면 샘플 앱은 'AI 응답 실패 · 계산 결과로 만든 설명'과 다시 시도 버튼을 보여줌
 
 ---
 
