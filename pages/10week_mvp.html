@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>공강 플래너</title>
+<!--
+  10주차 [실습] 4. 최소 기능 구현 샘플 (ver0.5) — 캠퍼스 공강 플래너
+  - 10week_prototype.html(ver0.4)에서 이어서 만든 작업본임
+  - 고정 예시(PLANS)를 지우고 가상 장소 자료(PLACES)·추정 이동시간·운영시간·예산으로 계획을 실제 계산함
+  - 계획별 방문 장소는 최대 2곳(9주차 PRD ver0.1 기준), 다음 수업 도착 여유 10분 포함
+  - 추천 이유는 계산 결과로 만든 문장이며 AI 설명은 아직 연결 전임 (화면에 표시)
+  - 실패 화면 확인용: 주소 뒤에 ?fail 을 붙이면 첫 추천이 '처리 실패'로 표시됨
+-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --brand:#5B4BF5; --brand-600:#4A3BE0; --brand-050:#F1EFFF; --brand-100:#E3DFFF;
+    --mint:#12B694; --mint-050:#E6FBF5; --amber:#F59E0B; --rose:#E5484D;
+    --ink:#16151F; --ink-2:#4B4A5A; --ink-3:#8A8999; --line:#ECEBF2; --bg:#F6F6FA; --card:#fff;
+    --r-lg:20px; --r-md:14px; --shadow:0 6px 24px rgba(30,25,80,.08);
+    --wrap:430px; /* 모바일 전용: 최대 430px 폭 */
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  html{background:#E9E8F2}
+  body{max-width:var(--wrap);margin:0 auto;box-shadow:0 0 0 1px var(--line);font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;min-height:100vh}
+  h1,h2,h3,p{margin:0}
+  button,input,select{font:inherit;color:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+  [hidden]{display:none!important}
+
+  /* ===== 상단 바 ===== */
+  .appbar{position:sticky;top:0;z-index:4;background:rgba(246,246,250,.9);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+  .appbar-in{max-width:var(--wrap);margin:0 auto;height:60px;display:flex;align-items:center;gap:10px;padding:0 16px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;letter-spacing:-.02em;background:none;border:0;padding:0}
+  .brand i{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#8B7BFF);display:grid;place-items:center;color:#fff;font-style:normal;font-size:15px}
+  .icon-btn{width:40px;height:40px;border-radius:12px;border:0;background:var(--card);display:grid;place-items:center;box-shadow:0 1px 0 var(--line);font-size:18px}
+  .appbar h1{font-size:17px;font-weight:700}
+
+  /* ===== 화면 ===== */
+  main{max-width:var(--wrap);margin:0 auto;padding:12px 16px 0}
+  .screen{display:none;animation:in .3s cubic-bezier(.2,.8,.2,1)}
+  .screen.is-active{display:block}
+  @keyframes in{from{opacity:0;transform:translateY(8px)}}
+  @media (prefers-reduced-motion:reduce){.screen{animation:none}}
+  .bottom{position:sticky;bottom:0;padding:16px 0 calc(20px + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--bg) 72%,rgba(246,246,250,0));margin-top:8px}
+
+  /* ===== 공통 ===== */
+  .card{background:var(--card);border-radius:var(--r-lg);padding:18px;box-shadow:var(--shadow)}
+  .label{font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:8px;display:block}
+  .cta{width:100%;height:56px;border:0;border-radius:16px;background:var(--brand);color:#fff;font-size:16px;font-weight:700;box-shadow:0 10px 24px rgba(91,75,245,.32);transition:background .15s,transform .1s}
+  .cta:hover{background:var(--brand-600)}
+  .cta:active{transform:scale(.99)}
+  .ghost{height:48px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--card);font-weight:600;font-size:15px}
+  .tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap}
+  .tag--brand{background:var(--brand-050);color:var(--brand)}
+  .tag--gray{background:#EFEFF4;color:var(--ink-2)}
+
+  /* ===== S-01 조건 입력 ===== */
+  .hello{padding:14px 0 18px}
+  .hello p{color:var(--ink-3);font-size:14px}
+  .hello h2{font-size:26px;line-height:1.35;margin-top:4px;letter-spacing:-.02em}
+  .stack{display:grid;gap:14px}
+  .time-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+  .time-row .arrow{color:var(--ink-3)}
+  .tbox{display:grid;gap:2px}
+  .tbox small{font-size:12px;color:var(--ink-3)}
+  .tbox input{border:0;padding:0;font-size:21px;min-width:0;font-weight:700;background:none;width:100%}
+  .gap-chip{margin-top:12px;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--brand-050);border-radius:12px;font-size:14px;color:var(--brand);font-weight:600}
+  .two{display:grid;grid-template-columns:1fr;gap:12px}
+  .sel{position:relative}
+  .sel select{appearance:none;-webkit-appearance:none;width:100%;height:50px;border:1px solid var(--line);border-radius:14px;background:#FBFBFD;padding:0 36px 0 42px;font-size:15px;font-weight:600}
+  .sel .ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:17px;pointer-events:none}
+  .sel::after{content:"";position:absolute;right:16px;top:50%;width:8px;height:8px;border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+  .purpose{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .pchip{height:76px;border:1.5px solid var(--line);border-radius:16px;background:#FBFBFD;display:grid;place-items:center;align-content:center;gap:4px;font-weight:600;font-size:14px;transition:all .15s}
+  .pchip span{font-size:22px}
+  .pchip[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-050);color:var(--brand)}
+  .budget-top{display:flex;justify-content:space-between;align-items:baseline}
+  .budget-top b{font-size:22px}
+  input[type=range]{width:100%;accent-color:var(--brand);margin-top:10px}
+  .range-scale{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3)}
+  .err{display:none;margin-top:8px;font-size:13px;color:var(--rose);font-weight:600}
+  .has-error .err{display:block}
+  .has-error.card{box-shadow:0 0 0 2px var(--rose),var(--shadow)}
+
+  /* ===== S-02 추천 계획 비교 ===== */
+  .cond{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}
+  .plan{display:block;background:var(--card);border-radius:var(--r-lg);padding:16px;box-shadow:var(--shadow);margin-bottom:12px;border:2px solid transparent;text-align:left;width:100%;transition:border-color .15s,transform .15s}
+  .plan:hover{border-color:var(--brand-100);transform:translateY(-1px)}
+  .plan-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .plan-head h3{font-size:17px}
+  .plan-stats{display:flex;gap:14px;margin:10px 0 12px;font-size:14px;color:var(--ink-2)}
+  .plan-stats b{color:var(--ink);font-size:16px}
+  .bar{display:flex;height:10px;border-radius:999px;overflow:hidden;background:#EFEFF4}
+  .bar i{display:block;height:100%}
+  .seg-move{background:#C9C6E8}.seg-meal{background:var(--amber)}.seg-study{background:var(--brand)}.seg-rest{background:var(--mint)}.seg-buffer{background:#E3E3EA}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:var(--ink-3)}
+  .legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;background:var(--c)}
+  .plan-reason{margin-top:10px;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+  .plan-more{display:block;margin-top:10px;font-size:13px;font-weight:700;color:var(--brand)}
+  .sample-note{text-align:center;font-size:12px;color:var(--ink-3);margin:6px 0 20px}
+  .skel{background:var(--card);border-radius:var(--r-lg);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+  .skel i{display:block;height:12px;border-radius:6px;background:linear-gradient(90deg,#EFEFF4 0%,#F7F7FA 50%,#EFEFF4 100%);background-size:200% 100%;animation:sh 1.2s infinite;margin-bottom:10px}
+  @keyframes sh{to{background-position:-200% 0}}
+  .loading-msg{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2);margin-bottom:12px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--brand);animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.25}}
+  .empty{text-align:center;padding:40px 20px}
+  .empty .em{font-size:44px}
+  .empty h3{font-size:18px;margin:10px 0 6px}
+  .empty p{color:var(--ink-2);font-size:14px;line-height:1.6}
+  .empty .fix{margin:18px auto 0;display:grid;gap:8px;max-width:280px}
+
+  /* ===== S-03 계획 상세·선택 ===== */
+  .hero{background:linear-gradient(135deg,#5B4BF5,#7D6BFF);color:#fff;border-radius:var(--r-lg);padding:20px;box-shadow:0 14px 30px rgba(91,75,245,.3);margin-top:6px}
+  .hero h2{font-size:22px;margin-top:8px}
+  .hero .tag{background:rgba(255,255,255,.18);color:#fff}
+  .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:16px;gap:8px}
+  .hero-stats div{background:rgba(255,255,255,.14);border-radius:12px;padding:10px;text-align:center}
+  .hero-stats small{display:block;font-size:12px;opacity:.85}
+  .hero-stats b{font-size:17px}
+  .sec-title{font-size:15px;font-weight:700;margin:24px 0 10px}
+  .tl{list-style:none;margin:0;padding:16px;background:var(--card);border-radius:var(--r-lg);box-shadow:var(--shadow)}
+  .tl li{display:grid;grid-template-columns:48px 28px 1fr;gap:10px;align-items:start;position:relative;padding-bottom:16px}
+  .tl li:last-child{padding-bottom:0}
+  .tl li:not(:last-child)::after{content:"";position:absolute;left:71px;top:30px;bottom:2px;width:2px;background:var(--line)}
+  .tl time{font-weight:700;font-size:14px;padding-top:4px}
+  .tl .pin{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:14px;background:var(--brand-050)}
+  .tl .what b{display:block;font-size:15px}
+  .tl .what small{color:var(--ink-3);font-size:13px}
+  .ai-box{background:var(--card);border-radius:var(--r-md);padding:14px 16px;border-left:4px solid var(--brand);box-shadow:var(--shadow);font-size:14px;line-height:1.6;color:var(--ink-2)}
+  .checks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .checks li{display:flex;align-items:center;gap:8px;font-size:14px;background:var(--card);border-radius:12px;padding:10px 12px}
+  .checks li::before{content:"✓";flex:none;width:20px;height:20px;border-radius:50%;background:var(--mint-050);color:#0B7A63;display:grid;place-items:center;font-weight:800;font-size:12px}
+  .source{font-size:12px;color:var(--ink-3);margin-top:14px;line-height:1.5}
+
+  /* ===== 선택 완료 시트 · 토스트 ===== */
+  .sheet-wrap{position:fixed;inset:0;background:rgba(15,12,40,.4);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;z-index:10}
+  .sheet-wrap.open{opacity:1;pointer-events:auto}
+  .sheet{width:100%;max-width:var(--wrap);background:var(--card);border-radius:26px 26px 0 0;padding:28px 22px calc(26px + env(safe-area-inset-bottom));text-align:center;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+  .sheet-wrap.open .sheet{transform:none}
+  .check{width:64px;height:64px;margin:0 auto 12px;border-radius:50%;background:var(--mint);display:grid;place-items:center;color:#fff;font-size:30px;font-weight:800}
+  .sheet h3{font-size:20px}
+  .sheet p{color:var(--ink-2);margin:6px 0 18px;font-size:15px;line-height:1.6}
+  .toast{position:fixed;left:50%;bottom:110px;transform:translate(-50%,20px);background:#1F1D2B;color:#fff;font-size:14px;padding:10px 16px;border-radius:12px;opacity:0;transition:all .25s;z-index:11;white-space:nowrap;pointer-events:none}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<!-- 상단 바: 첫 화면은 서비스 이름, 다음 화면부터 뒤로가기 + 화면 제목 -->
+<header class="appbar">
+  <div class="appbar-in">
+    <button class="icon-btn" type="button" id="backBtn" aria-label="이전 화면" hidden>←</button>
+    <button class="brand" type="button" id="brand" aria-label="처음 화면으로"><i>공</i>공강 플래너</button>
+    <h1 id="barTitle" hidden></h1>
+  </div>
+</header>
+
+<main>
+  <!-- S-01 공강 조건 입력 -->
+  <form class="screen is-active" id="S-01" data-title="" novalidate>
+    <div class="hello"><p>캠퍼스 공강 플래너 · ver0.5 최소 기능 구현</p><h2>이번 공강,<br>어떻게 보낼까요?</h2></div>
+    <div class="stack">
+      <div class="card" id="f-time">
+        <span class="label">공강 시간</span>
+        <div class="time-row">
+          <label class="tbox"><small>공강 시작</small><input id="start" type="time" value="12:00"></label>
+          <span class="arrow">→</span>
+          <label class="tbox"><small>공강 종료</small><input id="end" type="time" value="13:30"></label>
+        </div>
+        <div class="gap-chip"><span>사용할 수 있는 시간</span><span id="gapText">90분</span></div>
+        <p class="err" id="timeErr"></p>
+      </div>
+
+      <div class="card two">
+        <div><label class="label" for="from">출발 위치</label>
+          <div class="sel"><span class="ico">📍</span><select id="from"><option>강의동 A</option><option>학생식당 B</option><option>학습실 C</option><option>학생라운지 D</option></select></div></div>
+        <div><label class="label" for="to">다음 수업 위치</label>
+          <div class="sel"><span class="ico">🏫</span><select id="to"><option>강의동 A</option><option>학생식당 B</option><option>학습실 C</option><option>학생라운지 D</option></select></div></div>
+      </div>
+
+      <div class="card" id="f-purpose">
+        <span class="label">하고 싶은 활동 (복수 선택)</span>
+        <div class="purpose">
+          <button type="button" class="pchip" aria-pressed="true" data-p="식사"><span>🍚</span>식사</button>
+          <button type="button" class="pchip" aria-pressed="true" data-p="공부"><span>📚</span>공부</button>
+          <button type="button" class="pchip" aria-pressed="false" data-p="휴식"><span>☕</span>휴식</button>
+        </div>
+        <p class="err">활동을 1개 이상 선택해 주세요</p>
+      </div>
+
+      <div class="card">
+        <div class="budget-top"><label class="label" for="budget" style="margin:0">예산</label><b id="budgetText">8,000원</b></div>
+        <input id="budget" type="range" min="0" max="15000" step="500" value="8000">
+        <div class="range-scale"><span>0원</span><span>15,000원</span></div>
+      </div>
+    </div>
+    <div class="bottom"><button class="cta" type="submit">추천받기</button></div>
+  </form>
+
+  <!-- S-02 추천 계획 비교 -->
+  <section class="screen" id="S-02" data-title="추천 계획" data-back="S-01">
+    <div class="cond" id="cond"></div>
+
+    <div id="loading">
+      <div class="loading-msg"><span class="dot"></span>조건에 맞는 계획을 만드는 중이에요</div>
+      <div class="skel"><i style="width:40%"></i><i style="width:70%"></i><i></i></div>
+      <div class="skel"><i style="width:35%"></i><i style="width:60%"></i><i></i></div>
+    </div>
+
+    <div id="list" hidden></div>
+    <p class="sample-note" id="sampleNote" hidden>※ 가상 장소 자료로 계산한 추천이에요 · 추천 이유는 AI 연결 전 계산 문장이에요</p>
+
+    <div class="empty" id="empty" hidden>
+      <div class="em">🙅</div>
+      <h3>조건에 맞는 계획이 없어요</h3>
+      <p id="emptyWhy"></p>
+      <div class="fix"><button class="cta" type="button" data-go="S-01">조건 수정하기</button></div>
+    </div>
+
+    <div class="empty" id="fail" hidden>
+      <div class="em">⚠️</div>
+      <h3>추천을 불러오지 못했어요</h3>
+      <p>계획을 계산하지 못했어요. 입력한 조건은 그대로 있어요.<br>잠시 후 다시 시도해 주세요</p>
+      <div class="fix"><button class="cta" type="button" id="retry">다시 시도</button><button class="ghost" type="button" data-go="S-01">조건 수정</button></div>
+    </div>
+  </section>
+
+  <!-- S-03 계획 상세·선택 -->
+  <section class="screen" id="S-03" data-title="계획 상세" data-back="S-02">
+    <div class="hero">
+      <span class="tag" id="dTag"></span>
+      <h2 id="dTitle"></h2>
+      <div class="hero-stats" id="dStats"></div>
+    </div>
+    <h3 class="sec-title">활동 시간표</h3>
+    <ol class="tl" id="dTl"></ol>
+    <h3 class="sec-title">추천 이유 <span class="tag tag--gray">AI 연결 전</span></h3>
+    <div class="ai-box" id="dReason"></div>
+    <h3 class="sec-title">조건 확인</h3>
+    <ul class="checks" id="dChecks"></ul>
+    <p class="source">이동시간은 추정치이며 실제 도착을 보장하지 않아요<br>장소 정보: 가상 장소 자료(ver0.5 검증용) · 실제 학교 정보 아님</p>
+    <div class="bottom"><button class="cta" type="button" id="choose">이 계획으로 할게요</button></div>
+  </section>
+</main>
+
+<!-- 선택 완료 -->
+<div class="sheet-wrap" id="sheet" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="doneTitle">
+    <div class="check">✓</div>
+    <h3 id="doneTitle">계획을 선택했어요</h3>
+    <p id="doneText"></p>
+    <button class="cta" type="button" id="restart">새 계획 만들기</button>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ===== 가상 장소 자료 (ver0.5 검증용 — 실제 학교 정보 아님) =====
+  // act: 활동 / open·close: 운영시간 / cost: 예상 비용 / min: 최소 활동시간(분) / fixed: 시간이 정해진 활동
+  const PLACES = {
+    B: { name:'학생식당 B', act:'식사', open:'11:00', close:'14:00', cost:6500, min:25, fixed:true },
+    C: { name:'학습실 C', act:'공부', open:'08:00', close:'22:00', cost:0, min:20 },
+    D: { name:'학생라운지 D', act:'휴식', open:'09:00', close:'20:00', cost:500, min:20 }
+  };
+  const NAME_ID = { '강의동 A':'A', '학생식당 B':'B', '학습실 C':'C', '학생라운지 D':'D' };
+  const TRAVEL = { 'A-B':5, 'A-C':5, 'A-D':5, 'B-C':5, 'B-D':4, 'C-D':3 };   // 추정 이동시간(분)
+  const move = (a, b) => a === b ? 0 : (TRAVEL[a + '-' + b] ?? TRAVEL[b + '-' + a]);
+  const BUFFER = 10, FLEX_MAX = 60;   // 도착 여유 10분, 공부·휴식은 최대 60분까지 늘림
+  const ACT_PLACE = { 식사:'B', 공부:'C', 휴식:'D' };
+  const SEGK = { 식사:'meal', 공부:'study', 휴식:'rest' };
+  const hm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  const SEG = { move:['이동','#C9C6E8','seg-move'], meal:['식사','var(--amber)','seg-meal'], study:['공부','var(--brand)','seg-study'], rest:['휴식','var(--mint)','seg-rest'], buffer:['여유','#C9C9D3','seg-buffer'] };
+  const ICON = { 식사:'🍚', 공부:'📚', 휴식:'☕' };
+
+  const $ = s => document.querySelector(s);
+  const won = n => n.toLocaleString('ko-KR') + '원';
+  const st = { plan:null, failOnce: new URLSearchParams(location.search).has('fail') };
+  const toMin = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
+  const purposes = () => [...document.querySelectorAll('.pchip[aria-pressed="true"]')].map(b => b.dataset.p);
+  const gap = () => ($('#start').value && $('#end').value) ? toMin($('#end').value) - toMin($('#start').value) : NaN;
+
+  // ===== 화면 전환 (브라우저 뒤로가기와 연동) =====
+  function render(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('is-active', s.id === id));
+    const scr = document.getElementById(id), first = id === 'S-01';
+    $('#backBtn').hidden = first; $('#brand').hidden = !first;
+    $('#barTitle').hidden = first; $('#barTitle').textContent = scr.dataset.title;
+    window.scrollTo(0, 0);
+  }
+  function go(id, push = true) {
+    if (id !== 'S-01' && !st.ready) id = 'S-01';            // 결과 없이 바로 들어온 경우 첫 화면으로
+    render(id);
+    if (push) history.pushState({ id }, '', '#' + id);
+  }
+  window.addEventListener('popstate', e => render((e.state && e.state.id) || 'S-01'));
+  history.replaceState({ id:'S-01' }, '', location.pathname + location.search);
+  $('#backBtn').addEventListener('click', () => history.back());
+  $('#brand').addEventListener('click', () => go('S-01'));
+  document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
+
+  function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
+
+  // ===== S-01 조건 입력 =====
+  function paintGap(){ const g = gap(); $('#gapText').textContent = isNaN(g) ? '—' : (g > 0 ? `${g}분` : '시간을 확인해 주세요'); }
+  ['start','end'].forEach(id => $('#'+id).addEventListener('input', () => { paintGap(); $('#f-time').classList.remove('has-error'); }));
+  $('#budget').addEventListener('input', e => $('#budgetText').textContent = won(+e.target.value));
+  document.querySelectorAll('.pchip').forEach(b => b.addEventListener('click', () => {
+    b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+    $('#f-purpose').classList.remove('has-error');
+  }));
+
+  function validate(){
+    let ok = true; const g = gap();
+    if (isNaN(g)) { $('#timeErr').textContent = '공강 시작·종료 시간을 모두 입력해 주세요'; $('#f-time').classList.add('has-error'); ok = false; }
+    else if (g <= 0) { $('#timeErr').textContent = '종료 시간이 시작 시간보다 빨라요'; $('#f-time').classList.add('has-error'); ok = false; }
+    if (!purposes().length) { $('#f-purpose').classList.add('has-error'); ok = false; }
+    return ok;
+  }
+
+  $('#S-01').addEventListener('submit', e => {
+    e.preventDefault();
+    if (!validate()) { toast('입력한 조건을 확인해 주세요'); document.querySelector('.has-error')?.scrollIntoView({ behavior:'smooth', block:'center' }); return; }
+    const p = purposes();
+    $('#cond').innerHTML =
+      `<span class="tag tag--brand">⏱ ${$('#start').value}–${$('#end').value} · ${gap()}분</span>` +
+      `<span class="tag tag--gray">📍 ${$('#from').value} → ${$('#to').value}</span>` +
+      p.map(x => `<span class="tag tag--gray">${ICON[x]} ${x}</span>`).join('') +
+      `<span class="tag tag--gray">💳 ${won(+$('#budget').value)}</span>`;
+    st.ready = true; go('S-02'); load();
+  });
+
+  // ===== S-02 추천 계획 비교 =====
+  function show(k){ ['loading','list','empty','fail'].forEach(x => $('#'+x).hidden = x !== k); $('#sampleNote').hidden = k !== 'list'; }
+  // 순서가 있는 활동 조합 (방문 장소 최대 2곳)
+  function sequences(p) {
+    const out = [];
+    p.forEach(a => out.push([a]));
+    p.forEach(a => p.forEach(b => { if (a !== b) out.push([a, b]); }));
+    return out;
+  }
+  function makePlan(acts, q) {
+    const ids = acts.map(a => ACT_PLACE[a]), from = q.from, to = q.to;
+    // 이동시간 합 + 고정 활동 시간을 먼저 빼고 남는 시간을 공부·휴식에 나눔
+    let travelSum = 0, prev = from; ids.forEach(id => { travelSum += move(prev, id); prev = id; }); travelSum += move(prev, to);
+    const fixed = ids.filter(id => PLACES[id].fixed).reduce((a, id) => a + PLACES[id].min, 0);
+    const flexIds = ids.filter(id => !PLACES[id].fixed);
+    const left = q.gap - BUFFER - travelSum - fixed;
+    const flexEach = flexIds.length ? Math.min(FLEX_MAX, Math.floor(left / flexIds.length / 5) * 5) : 0;
+    if (flexIds.length && flexEach < 20) return { fail:'time' };
+    if (left < 0) return { fail:'time' };
+    let t = q.start, here = from, cost = 0; const seg = [], tl = [[hm(t), '🚶', NAMES(from) + ' 출발', '']], why = [];
+    for (const id of ids) {
+      const pl = PLACES[id], mv = move(here, id); t += mv; seg.push(['move', mv]);
+      tl[tl.length - 1][3] += (tl[tl.length - 1][3] ? ' · ' : '') + `${pl.name}까지 ${mv}분`;
+      const dur = pl.fixed ? pl.min : flexEach;
+      if (t < toMin(pl.open) || t + dur > toMin(pl.close)) return { fail:'hours', place: pl.name };
+      tl.push([hm(t), ICON[pl.act], pl.name, `${pl.act} ${dur}분${pl.cost ? ' · 약 ' + won(pl.cost) : ''}`]);
+      seg.push([SEGK[pl.act], dur]); t += dur; cost += pl.cost; here = id;
+      why.push(`${pl.name}(${pl.open}–${pl.close}) ${pl.act} ${dur}분`);
+    }
+    const back = move(here, to); t += back; seg.push(['move', back]);
+    tl[tl.length - 1][3] += ` · ${NAMES(to)}까지 ${back}분`;
+    if (t + BUFFER > q.end) return { fail:'time' };
+    if (cost > q.budget) return { fail:'budget', cost };
+    seg.push(['buffer', q.end - t]);
+    tl.push([hm(t), '🏫', NAMES(to) + ' 도착', `수업 ${q.end - t}분 전`]);
+    return {
+      id: acts.join('-'), need: acts, name: acts.map((a, i) => i < acts.length - 1 ? ({식사:'밥 먹고', 공부:'공부하고', 휴식:'쉬고'})[a] : ({식사:'밥 먹기', 공부:'공부하기', 휴식:'쉬기'})[a]).join(' '),
+      total: t - q.start + BUFFER, cost, arrive: hm(t), seg, tl,
+      reason: `${why.join(' → ')} 순서로 운영시간 안에 이용할 수 있어요. 이동 ${travelSum}분과 도착 여유 ${BUFFER}분을 포함해 ${hm(t)}에 ${NAMES(to)}에 도착해요. 예상 비용은 ${won(cost)}이에요.`
+    };
+  }
+  function NAMES(id) { return Object.keys(NAME_ID).find(k => NAME_ID[k] === id); }
+  function generate() {
+    const q = { start: toMin($('#start').value), end: toMin($('#end').value), gap: gap(), budget: +$('#budget').value,
+                from: NAME_ID[$('#from').value], to: NAME_ID[$('#to').value] };
+    const p = purposes(), fails = [], plans = [];
+    for (const acts of sequences(p)) { const r = makePlan(acts, q); if (r.fail) fails.push(r); else plans.push(r); }
+    // 선택한 활동을 많이 담은 계획 → 비용이 적은 계획 순, 최대 3개
+    plans.sort((a, b) => b.need.length - a.need.length || a.cost - b.cost || b.total - a.total);
+    if (plans.length) return { plans: plans.slice(0, 3) };
+    const f = fails.find(x => x.fail === 'budget') ? ['budget'] : fails.find(x => x.fail === 'hours') ? ['hours', fails.find(x => x.fail === 'hours').place] : ['time'];
+    const why = f[0] === 'budget' ? `예산 ${won(q.budget)}으로 가능한 계획이 없어요<br>예산을 늘리거나 활동을 바꿔 보세요`
+              : f[0] === 'hours' ? `${f[1]}의 운영시간 안에 이용하기 어려워요<br>공강 시간이나 활동을 바꿔 보세요`
+              : `공강 ${q.gap}분 안에 이동과 활동을 모두 넣기 어려워요<br>공강 시간을 늘리거나 활동을 줄여 보세요`;
+    return { plans: [], why };
+  }
+  function load(){
+    show('loading');
+    setTimeout(() => {
+      if (st.failOnce) { st.failOnce = false; show('fail'); return; }
+      const res = generate(), plans = res.plans;
+      if (!plans.length) { $('#emptyWhy').innerHTML = res.why; show('empty'); return; }
+      st.plans = plans; list(plans); show('list');
+    }, 1100);
+  }
+  $('#retry').addEventListener('click', load);
+
+  const bar = seg => { const sum = seg.reduce((a,[,m]) => a+m, 0); return `<span class="bar">${seg.map(([k,m]) => `<i class="${SEG[k][2]}" style="width:${m/sum*100}%"></i>`).join('')}</span>`; };
+  const legend = seg => `<span class="legend">${[...new Set(seg.map(([k]) => k))].map(k => `<span style="--c:${SEG[k][1]}">${SEG[k][0]}</span>`).join('')}</span>`;
+  function list(plans){
+    $('#list').innerHTML = plans.map((x,i) => `
+      <button class="plan" type="button" data-plan="${x.id}">
+        <span class="plan-head"><h3>${x.name}</h3>${i===0 ? '<span class="tag tag--brand">조건 충족 1순위</span>' : ''}</span>
+        <span class="plan-stats"><span>총 <b>${x.total}분</b></span><span><b>${won(x.cost)}</b></span><span>도착 <b>${x.arrive}</b></span></span>
+        ${bar(x.seg)}${legend(x.seg)}
+        <span class="plan-reason">${x.reason.split('. ')[0].replace(/\.$/,'')}.</span>
+        <span class="plan-more">자세히 보기 ›</span>
+      </button>`).join('');
+  }
+  $('#list').addEventListener('click', e => {
+    const b = e.target.closest('[data-plan]'); if (!b) return;
+    st.plan = st.plans.find(x => x.id === b.dataset.plan);
+    detail(); go('S-03');
+  });
+
+  // ===== S-03 계획 상세·선택 =====
+  function detail(){
+    const x = st.plan, g = gap(), budget = +$('#budget').value;
+    $('#dTag').textContent = x.need.map(n => ICON[n]+' '+n).join(' · ');
+    $('#dTitle').textContent = x.name;
+    $('#dStats').innerHTML = `<div><small>총 소요</small><b>${x.total}분</b></div><div><small>예상 비용</small><b>${won(x.cost)}</b></div><div><small>도착</small><b>${x.arrive}</b></div>`;
+    $('#dTl').innerHTML = x.tl.map(([t,ic,w,s]) => `<li><time>${t}</time><span class="pin">${ic}</span><span class="what"><b>${w}</b><small>${s}</small></span></li>`).join('');
+    $('#dReason').innerHTML = x.reason + '<br><small style="color:var(--ink-3)">계산 결과로 만든 설명 · AI 추천 이유 생성은 다음 버전에서 연결</small>';
+    $('#dChecks').innerHTML = [
+      `공강 ${g}분 안에 끝나요 (도착 여유 ${BUFFER}분 포함)`,
+      `예산 ${won(budget)} 이하예요`,
+      '모든 장소를 운영시간 안에 이용해요 (가상 자료 기준)',
+      `${$('#to').value}에 수업 전에 도착해요`
+    ].map(t => `<li>${t}</li>`).join('');
+  }
+  const sheet = $('#sheet');
+  $('#choose').addEventListener('click', () => {
+    $('#doneText').innerHTML = `<b>${st.plan.name}</b><br>${st.plan.arrive}에 ${$('#to').value} 도착 예정이에요`;
+    sheet.classList.add('open'); sheet.setAttribute('aria-hidden','false'); $('#restart').focus();
+  });
+  $('#restart').addEventListener('click', () => {
+    sheet.classList.remove('open'); sheet.setAttribute('aria-hidden','true');
+    st.plan = null; st.ready = false; go('S-01');
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheet.classList.contains('open')) { sheet.classList.remove('open'); sheet.setAttribute('aria-hidden','true'); } });
+
+  paintGap();
+})();
+</script>
+</body>
+</html>
